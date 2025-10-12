@@ -1,6 +1,7 @@
 package com.fsmw.model.user;
 
 import com.fsmw.model.common.BaseEntity;
+import com.fsmw.model.movie.Movie;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
