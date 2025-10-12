@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -40,6 +42,7 @@ public class User extends BaseEntity {
         inverseJoinColumns = @JoinColumn(name = "movie_id"),
         uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "movie_id"})
     )
+    @OnDelete(action = OnDeleteAction.CASCADE)
     @Builder.Default
     private Set<Movie> movies = new HashSet<>();
 }
