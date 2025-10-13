@@ -19,7 +19,7 @@ public abstract class TransactionalService {
         void accept(T t) throws Exception;
     }
 
-    public void executeTransaction(ThrowingConsumer<EntityManager> consumer) {
+    public void executeTransactionVoid(ThrowingConsumer<EntityManager> consumer) {
         Objects.requireNonNull(consumer, "consumer must not be null");
         executeVoid(consumer);
     }
