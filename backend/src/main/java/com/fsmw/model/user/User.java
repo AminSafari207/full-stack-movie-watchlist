@@ -36,7 +36,7 @@ public class User extends BaseEntity {
     @Column(name = "password", nullable = false)
     private String password;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
         name = "watchlist",
         joinColumns = @JoinColumn(name = "user_id"),

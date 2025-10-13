@@ -4,6 +4,8 @@ import com.fsmw.model.common.BaseEntity;
 import com.fsmw.model.user.User;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
@@ -27,11 +29,12 @@ public class Movie extends BaseEntity {
     @Column(name = "genre", nullable = false)
     private String genre;
 
-    @NotBlank
+    @NotNull
+    @Positive
     @Column(name = "duration", nullable = false)
     private Long duration;
 
-    @ManyToMany(mappedBy = "movies")
+    @ManyToMany(mappedBy = "movies", fetch = FetchType.LAZY)
     @Builder.Default
     private Set<User> users = new HashSet<>();
 }
