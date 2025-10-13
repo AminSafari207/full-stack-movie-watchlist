@@ -74,7 +74,7 @@ public abstract class AbstractBaseRepository<T extends BaseEntity, ID extends Se
     public boolean exists(ID id) {
         TypedQuery<Integer> q = em.createQuery(
                 "select 1 from " + getEntityName() + " e where e.id = :id",
-                Integer.class
+                        Integer.class
                 )
                 .setParameter("id", id)
                 .setMaxResults(1);
