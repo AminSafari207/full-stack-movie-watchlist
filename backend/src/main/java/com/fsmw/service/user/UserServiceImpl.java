@@ -8,7 +8,7 @@ import com.fsmw.service.base.BaseService;
 
 public class UserServiceImpl
         extends AbstractBaseService<User, Long, UserRepository>
-        implements BaseService<User, Long> {
+        implements UserService {
 
     public UserServiceImpl() {
         super(UserRepositoryImpl::new);

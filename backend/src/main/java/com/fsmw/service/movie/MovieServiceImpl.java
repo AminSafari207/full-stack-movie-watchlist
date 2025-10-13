@@ -8,7 +8,7 @@ import com.fsmw.service.base.BaseService;
 
 public class MovieServiceImpl
         extends AbstractBaseService<Movie, Long, MovieRepository>
-        implements BaseService<Movie, Long> {
+        implements MovieService {
 
     public MovieServiceImpl() {
         super(MovieRepositoryImpl::new);
