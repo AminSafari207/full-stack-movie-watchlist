@@ -9,6 +9,7 @@ public interface BaseRepository<T, ID extends Serializable> {
     List<T> findAll();
     Optional<T> findById(ID id);
     boolean deleteById(ID id);
+    boolean exists(ID id);
     long count();
 
     Class<T> getEntityClassRef();

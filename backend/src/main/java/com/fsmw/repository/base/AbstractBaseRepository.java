@@ -3,6 +3,8 @@ package com.fsmw.repository.base;
 import com.fsmw.model.common.BaseEntity;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.persistence.NoResultException;
+import jakarta.persistence.TypedQuery;
 
 import java.io.Serializable;
 import java.util.List;
@@ -66,5 +68,22 @@ public abstract class AbstractBaseRepository<T extends BaseEntity, ID extends Se
     public long count() {
         return em.createQuery("select count(e) from " + getEntityName() + " e", Long.class)
                 .getSingleResult();
+    }
+
+    @Override
+    public boolean exists(ID id) {
+        TypedQuery<Integer> q = em.createQuery(
+                "select 1 from " + getEntityName() + " e where e.id = :id",
+                Integer.class
+                )
+                .setParameter("id", id)
+                .setMaxResults(1);
+
+        try {
+            q.getSingleResult();
+            return true;
+        } catch (NoResultException ex) {
+            return false;
+        }
     }
 }
