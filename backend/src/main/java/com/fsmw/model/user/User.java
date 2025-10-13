@@ -2,6 +2,7 @@ package com.fsmw.model.user;
 
 import com.fsmw.model.common.BaseEntity;
 import com.fsmw.model.movie.Movie;
+import com.fsmw.model.watchlist.Watchlist;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
@@ -15,8 +16,8 @@ import java.util.Set;
 @Getter
 @Setter
 @NoArgsConstructor
-@EqualsAndHashCode(callSuper = true, exclude = "movies")
-@ToString(callSuper = true, exclude = {"password", "movies"})
+@EqualsAndHashCode(callSuper = true, exclude = "watchlist")
+@ToString(callSuper = true, exclude = {"password", "watchlist"})
 @SuperBuilder(toBuilder = true)
 @Entity
 @Table(
@@ -36,24 +37,28 @@ public class User extends BaseEntity {
     @Column(name = "password", nullable = false)
     private String password;
 
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-        name = "watchlist",
-        joinColumns = @JoinColumn(name = "user_id"),
-        inverseJoinColumns = @JoinColumn(name = "movie_id"),
-        uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "movie_id"})
+    @OneToMany(
+            mappedBy = "user",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
     )
-    @OnDelete(action = OnDeleteAction.CASCADE)
     @Builder.Default
-    private Set<Movie> movies = new HashSet<>();
+    private Set<Watchlist> watchlist = new HashSet<>();
 
-    public void addMovie(Movie movie) {
-        movies.add(movie);
-        movie.getUsers().add(this);
+    public void addToWatchlist(Movie movie, String status) {
+        Watchlist w = Watchlist
+                .builder()
+                .user(this)
+                .movie(movie)
+                .build();
+
+        watchlist.add(w);
+        movie.getWatchlist().add(w);
     }
 
-    public void removeMovie(Movie movie) {
-        movies.remove(movie);
-        movie.getUsers().remove(this);
+    public void removeFromWatchlist(Movie movie) {
+        watchlist.removeIf(w -> w.getMovie().equals(movie));
+        movie.getWatchlist().removeIf(w -> w.getUser().equals(this));
     }
 }

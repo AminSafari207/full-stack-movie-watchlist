@@ -2,6 +2,7 @@ package com.fsmw.model.movie;
 
 import com.fsmw.model.common.BaseEntity;
 import com.fsmw.model.user.User;
+import com.fsmw.model.watchlist.Watchlist;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -15,8 +16,8 @@ import java.util.Set;
 @Getter
 @Setter
 @NoArgsConstructor
-@EqualsAndHashCode(callSuper = true, exclude = "users")
-@ToString(callSuper = true, exclude = "users")
+@EqualsAndHashCode(callSuper = true, exclude = "watchlist")
+@ToString(callSuper = true, exclude = "watchlist")
 @SuperBuilder(toBuilder = true)
 @Entity
 @Table(name = "movies")
@@ -34,7 +35,12 @@ public class Movie extends BaseEntity {
     @Column(name = "duration", nullable = false)
     private Long duration;
 
-    @ManyToMany(mappedBy = "movies", fetch = FetchType.LAZY)
+    @OneToMany(
+            mappedBy = "movie",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
+    )
     @Builder.Default
-    private Set<User> users = new HashSet<>();
+    private Set<Watchlist> watchlist = new HashSet<>();
 }
