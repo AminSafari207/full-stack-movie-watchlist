@@ -46,4 +46,14 @@ public class User extends BaseEntity {
     @OnDelete(action = OnDeleteAction.CASCADE)
     @Builder.Default
     private Set<Movie> movies = new HashSet<>();
+
+    public void addMovie(Movie movie) {
+        movies.add(movie);
+        movie.getUsers().add(this);
+    }
+
+    public void removeMovie(Movie movie) {
+        movies.remove(movie);
+        movie.getUsers().remove(this);
+    }
 }
