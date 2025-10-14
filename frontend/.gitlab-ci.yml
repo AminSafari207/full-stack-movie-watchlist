@@ -1,0 +1,2 @@
+include:
+  - local: '.gitlab/ci/mr-check.yml'
