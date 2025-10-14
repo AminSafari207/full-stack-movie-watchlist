@@ -1,0 +1,136 @@
+package com.fsmw.test;
+
+import com.fsmw.model.movie.Movie;
+import com.fsmw.model.user.User;
+import com.fsmw.repository.movie.MovieRepositoryImpl;
+import com.fsmw.repository.user.UserRepositoryImpl;
+import com.fsmw.repository.watchlist.WatchlistRepositoryImpl;
+import com.fsmw.service.movie.MovieService;
+import com.fsmw.service.movie.MovieServiceImpl;
+import com.fsmw.service.user.UserService;
+import com.fsmw.service.user.UserServiceImpl;
+import com.fsmw.service.watchlist.WatchlistServiceImpl;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.Persistence;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+public class WatchlistIntegrationTest {
+
+    private static EntityManagerFactory emf;
+
+    private static UserService userService;
+    private static MovieService movieService;
+    private static WatchlistServiceImpl watchlistService;
+
+    @BeforeAll
+    public static void init() {
+        emf = Persistence.createEntityManagerFactory("h2-test");
+
+        userService = new UserServiceImpl();
+        movieService = new MovieServiceImpl();
+        watchlistService = new WatchlistServiceImpl();
+    }
+
+    @AfterAll
+    public static void tearDown() {
+        if (emf != null && emf.isOpen()) emf.close();
+    }
+
+    @Test
+    public void createUser() {
+        User u = User.builder()
+                .username("johndoe")
+                .email("johndoe@example.com")
+                .password("password")
+                .build();
+
+        User created = userService.create(u);
+        assertNotNull(created.getId(), "created user should have id");
+
+        User fetched = userService.findById(created.getId()).orElseThrow();
+        assertEquals("johndoe", fetched.getUsername());
+        assertEquals("johndoe@example.com", fetched.getEmail());
+        assertNotNull(fetched.getPassword(), "password should be present");
+    }
+
+    @Test
+    public void createMovie() {
+        Movie m = Movie.builder()
+                .title("The Matrix")
+                .genre("Sci-Fi")
+                .duration(8160L)
+                .build();
+
+        Movie created = movieService.create(m);
+        assertNotNull(created.getId(), "created movie should have id");
+
+        Movie fetched = movieService.findById(created.getId()).orElseThrow();
+        assertEquals("The Matrix", fetched.getTitle());
+        assertEquals("Sci-Fi", fetched.getGenre());
+        assertEquals(8160, fetched.getDuration());
+    }
+
+    @Test
+    public void addMultipleWatchlistWithConcurrency() throws InterruptedException, ExecutionException, TimeoutException {
+        User u = User.builder()
+                .username("johndoe")
+                .email("johndoe@example.com")
+                .password("password")
+                .build();
+
+        Long userId = userService.create(u).getId();
+        List<Long> movieIds = new ArrayList<>();
+
+        for (int i = 1; i <= 5; i++) {
+            Movie m = Movie.builder()
+                    .title("Movie " + i)
+                    .genre("Genre" + i)
+                    .duration(5000L + i * 60L)
+                    .build();
+
+            movieIds.add(movieService.create(m).getId());
+        }
+
+        List<Thread> threads = new ArrayList<>();
+
+        for (int t = 0; t < 4; t++) {
+            Thread th = new Thread(() -> {
+                for (Long mid : movieIds) {
+                    try {
+                        watchlistService.addToWatchlist(userId, mid);
+                    } catch (Exception ignored) {
+                    }
+                }
+            });
+
+            threads.add(th);
+            th.start();
+        }
+
+        for (Thread th : threads) {
+            th.join();
+        }
+
+        List<Movie> movies = watchlistService.getMoviesByUserId(userId);
+        Set<Long> ids = new HashSet<>();
+
+        for (Movie m : movies) ids.add(m.getId());
+
+        assertEquals(movieIds.size(), ids.size());
+        assertTrue(ids.containsAll(movieIds));
+
+    }
+}
