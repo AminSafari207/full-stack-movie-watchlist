@@ -84,7 +84,7 @@ public class WatchlistIntegrationTest {
     }
 
     @Test
-    public void addMultipleWatchlistWithConcurrency() throws InterruptedException, ExecutionException, TimeoutException {
+    public void addMultipleWatchlistWithConcurrency_removeOneAlso() throws InterruptedException, ExecutionException, TimeoutException {
         User u = User.builder()
                 .username("johndoe")
                 .email("johndoe@example.com")
@@ -132,5 +132,17 @@ public class WatchlistIntegrationTest {
         assertEquals(movieIds.size(), ids.size());
         assertTrue(ids.containsAll(movieIds));
 
+        Long movieToRemove = movieIds.get(1);
+        boolean removed = watchlistService.removeFromWatchlist(userId, movieToRemove);
+
+        assertTrue(removed, "movie should be removed from watchlist");
+
+        List<Movie> afterRemoval = watchlistService.getMoviesByUserId(userId);
+        Set<Long> afterIds = new HashSet<>();
+
+        for (Movie mv : afterRemoval) afterIds.add(mv.getId());
+
+        assertFalse(afterIds.contains(movieToRemove), "removed movie should not be in watchlist anymore");
+        assertEquals(movieIds.size() - 1, afterIds.size(), "watchlist size should reduce by one");
     }
 }
