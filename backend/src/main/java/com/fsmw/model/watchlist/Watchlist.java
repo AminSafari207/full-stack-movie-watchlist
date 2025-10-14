@@ -24,11 +24,11 @@ import lombok.experimental.SuperBuilder;
 )
 
 public class Watchlist extends BaseEntity {
-    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @ManyToOne(optional = false, fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id", nullable = false, updatable = false)
     private User user;
 
-    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @ManyToOne(optional = false, fetch = FetchType.EAGER)
     @JoinColumn(name = "movie_id", nullable = false, updatable = false)
     private Movie movie;
 }

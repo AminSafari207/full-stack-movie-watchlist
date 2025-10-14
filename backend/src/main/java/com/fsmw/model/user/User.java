@@ -41,7 +41,7 @@ public class User extends BaseEntity {
             mappedBy = "user",
             cascade = CascadeType.ALL,
             orphanRemoval = true,
-            fetch = FetchType.LAZY
+            fetch = FetchType.EAGER
     )
     @Builder.Default
     private Set<Watchlist> watchlist = new HashSet<>();

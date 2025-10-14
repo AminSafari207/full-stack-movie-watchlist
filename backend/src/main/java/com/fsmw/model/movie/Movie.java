@@ -39,7 +39,7 @@ public class Movie extends BaseEntity {
             mappedBy = "movie",
             cascade = CascadeType.ALL,
             orphanRemoval = true,
-            fetch = FetchType.LAZY
+            fetch = FetchType.EAGER
     )
     @Builder.Default
     private Set<Watchlist> watchlist = new HashSet<>();
