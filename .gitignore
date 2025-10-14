@@ -1,0 +1,41 @@
+# ---- Java / Maven / Gradle ----
+target/
+build/
+out/
+*.class
+*.jar
+*.war
+*.ear
+*.log
+
+# ---- IntelliJ IDEA ----
+.idea/
+*.iml
+
+# ---- Eclipse ----
+.project
+.classpath
+.settings/
+
+# ---- VS Code ----
+.vscode/
+
+# ---- Node / React ----
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+.pnpm-debug.log*
+dist/
+build/
+
+# ---- OS files ----
+.DS_Store
+Thumbs.db
+
+# ---- Environment / secrets ----
+.env
+.env.local
+.env.*.local
