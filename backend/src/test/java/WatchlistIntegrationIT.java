@@ -27,7 +27,7 @@ import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class WatchlistIntegrationTest {
+public class WatchlistIntegrationIT {
 
     private static EntityManagerFactory emf;
 
