@@ -19,7 +19,7 @@
     </properties>
   </persistence-unit>
 
-  <persistence-unit name="h2-test">
+  <persistence-unit name="h2_test">
     <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
     <properties>
       <property name="jakarta.persistence.jdbc.driver" value="org.h2.Driver"/>
