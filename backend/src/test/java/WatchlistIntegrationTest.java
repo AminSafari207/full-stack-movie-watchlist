@@ -61,7 +61,7 @@ public class WatchlistIntegrationTest {
                 .password("password")
                 .build();
 
-        User created = userService.create(u);
+        User created = userService.save(u);
         assertNotNull(created.getId(), "created user should have id");
 
         User fetched = userService.findById(created.getId()).orElseThrow();
@@ -78,7 +78,7 @@ public class WatchlistIntegrationTest {
                 .duration(8160L)
                 .build();
 
-        Movie created = movieService.create(m);
+        Movie created = movieService.save(m);
         assertNotNull(created.getId(), "created movie should have id");
 
         Movie fetched = movieService.findById(created.getId()).orElseThrow();
@@ -95,7 +95,7 @@ public class WatchlistIntegrationTest {
                 .password("password")
                 .build();
 
-        Long userId = userService.create(u).getId();
+        Long userId = userService.save(u).getId();
         List<Long> movieIds = new ArrayList<>();
 
         for (int i = 1; i <= 5; i++) {
@@ -105,7 +105,7 @@ public class WatchlistIntegrationTest {
                     .duration(5000L + i * 60L)
                     .build();
 
-            movieIds.add(movieService.create(m).getId());
+            movieIds.add(movieService.save(m).getId());
         }
 
         List<Thread> threads = new ArrayList<>();

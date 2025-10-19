@@ -33,7 +33,7 @@ public class AbstractBaseService<
     }
 
     @Override
-    public T create(T entity) {
+    public T save(T entity) {
         return executeTransaction(em -> coreRepository(em).save(entity));
     }
 

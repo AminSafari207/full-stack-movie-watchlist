@@ -2,7 +2,6 @@ package com.fsmw.servlet;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.hibernate5.Hibernate5Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fsmw.model.dto.CreateUserDto;
 import com.fsmw.model.dto.ErrorDto;
@@ -10,8 +9,6 @@ import com.fsmw.model.dto.UserDto;
 import com.fsmw.model.user.User;
 import com.fsmw.service.ServiceProvider;
 import com.fsmw.service.user.UserService;
-import com.fsmw.service.user.UserServiceImpl;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -86,7 +83,7 @@ public class UserServlet extends HttpServlet {
                     .password(dto.password())
                     .build();
 
-            User saved = userService.create(user);
+            User saved = userService.save(user);
 
             resp.setStatus(HttpServletResponse.SC_CREATED);
             writeJson(resp, UserDto.from(saved));

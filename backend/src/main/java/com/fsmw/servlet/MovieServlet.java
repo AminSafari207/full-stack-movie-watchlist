@@ -2,7 +2,6 @@ package com.fsmw.servlet;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.hibernate5.Hibernate5Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fsmw.model.dto.CreateMovieDto;
 import com.fsmw.model.dto.ErrorDto;
@@ -10,8 +9,6 @@ import com.fsmw.model.dto.MovieDto;
 import com.fsmw.model.movie.Movie;
 import com.fsmw.service.ServiceProvider;
 import com.fsmw.service.movie.MovieService;
-import com.fsmw.service.movie.MovieServiceImpl;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -85,7 +82,7 @@ public class MovieServlet extends HttpServlet {
                     .duration(dto.duration())
                     .build();
 
-            Movie saved = movieService.create(movie);
+            Movie saved = movieService.save(movie);
 
             resp.setStatus(HttpServletResponse.SC_CREATED);
             writeJson(resp, MovieDto.from(saved));
