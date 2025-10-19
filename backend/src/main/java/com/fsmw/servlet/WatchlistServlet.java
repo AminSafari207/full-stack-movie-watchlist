@@ -9,6 +9,7 @@ import com.fsmw.model.dto.MovieDto;
 import com.fsmw.model.dto.WatchlistDto;
 import com.fsmw.model.movie.Movie;
 import com.fsmw.model.watchlist.Watchlist;
+import com.fsmw.service.ServiceProvider;
 import com.fsmw.service.watchlist.WatchlistService;
 import com.fsmw.service.watchlist.WatchlistServiceImpl;
 import jakarta.servlet.ServletException;
@@ -22,13 +23,14 @@ import java.util.List;
 
 @WebServlet("/watchlist")
 public class WatchlistServlet extends HttpServlet {
-    private ObjectMapper mapper;
+    private final ObjectMapper mapper = new ObjectMapper();;
     private WatchlistService watchlistService;
 
     @Override
     public void init() {
-        this.mapper = new ObjectMapper();
-        this.watchlistService = new WatchlistServiceImpl();
+        ServiceProvider serviceProvider = new ServiceProvider();
+
+        this.watchlistService = serviceProvider.getWatchlistService();
 
         mapper.registerModule(new JavaTimeModule());
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);

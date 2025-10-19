@@ -8,6 +8,7 @@ import com.fsmw.model.dto.CreateUserDto;
 import com.fsmw.model.dto.ErrorDto;
 import com.fsmw.model.dto.UserDto;
 import com.fsmw.model.user.User;
+import com.fsmw.service.ServiceProvider;
 import com.fsmw.service.user.UserService;
 import com.fsmw.service.user.UserServiceImpl;
 import jakarta.servlet.ServletException;
@@ -33,7 +34,9 @@ public class UserServlet extends HttpServlet {
 
     @Override
     public void init() {
-        this.userService = new UserServiceImpl();
+        ServiceProvider serviceProvider = new ServiceProvider();
+
+        this.userService = serviceProvider.getUserService();
 
         mapper.registerModule(new JavaTimeModule());
 //        mapper.registerModule(new Hibernate5Module());

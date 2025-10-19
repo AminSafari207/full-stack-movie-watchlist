@@ -16,6 +16,7 @@ import com.fsmw.service.base.AbstractBaseService;
 import com.fsmw.service.base.BaseService;
 import com.fsmw.utils.concurrency.UserLocks;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.PersistenceException;
 
 import java.util.List;
@@ -28,8 +29,8 @@ public class WatchlistServiceImpl
         extends AbstractBaseService<Watchlist, Long, WatchlistRepository>
         implements WatchlistService {
 
-    public WatchlistServiceImpl() {
-        super(WatchlistRepositoryImpl::new);
+    public WatchlistServiceImpl(EntityManagerFactory emf) {
+        super(emf, WatchlistRepositoryImpl::new);
     }
 
     @Override

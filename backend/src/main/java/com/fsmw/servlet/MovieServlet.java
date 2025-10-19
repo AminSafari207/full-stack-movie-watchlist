@@ -8,6 +8,7 @@ import com.fsmw.model.dto.CreateMovieDto;
 import com.fsmw.model.dto.ErrorDto;
 import com.fsmw.model.dto.MovieDto;
 import com.fsmw.model.movie.Movie;
+import com.fsmw.service.ServiceProvider;
 import com.fsmw.service.movie.MovieService;
 import com.fsmw.service.movie.MovieServiceImpl;
 import jakarta.servlet.ServletException;
@@ -33,7 +34,8 @@ public class MovieServlet extends HttpServlet {
 
     @Override
     public void init() {
-        this.movieService = new MovieServiceImpl();
+        ServiceProvider serviceProvider = new ServiceProvider();
+        this.movieService = serviceProvider.getMovieService();
 
         mapper.registerModule(new JavaTimeModule());
 //        mapper.registerModule(new Hibernate5Module());

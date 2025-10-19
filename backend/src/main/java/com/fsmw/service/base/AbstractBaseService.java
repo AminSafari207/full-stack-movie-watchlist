@@ -3,6 +3,7 @@ package com.fsmw.service.base;
 import com.fsmw.model.common.BaseEntity;
 import com.fsmw.repository.base.BaseRepository;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
 
 import java.io.Serializable;
 import java.util.List;
@@ -19,7 +20,9 @@ public class AbstractBaseService<
 {
     protected final Function<EntityManager, R> repositoryFactory;
 
-    public AbstractBaseService(Function<EntityManager, R> repositoryFactory) {
+    public AbstractBaseService(EntityManagerFactory emf, Function<EntityManager, R> repositoryFactory) {
+        super(emf);
+
         if (repositoryFactory == null) throw new IllegalArgumentException("'repositoryFactory' must not be null");
 
         this.repositoryFactory = repositoryFactory;

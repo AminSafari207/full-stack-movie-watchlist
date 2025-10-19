@@ -1,7 +1,7 @@
 package com.fsmw.service.base;
 
-import com.fsmw.utils.JpaUtils;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.EntityTransaction;
 
 import java.util.function.Function;
@@ -9,6 +9,12 @@ import java.util.function.Function;
 import java.util.Objects;
 
 public abstract class TransactionalService {
+    private final EntityManagerFactory emf;
+
+    public TransactionalService(EntityManagerFactory emf) {
+        this.emf = emf;
+    }
+
     @FunctionalInterface
     public interface ThrowingFunction<T, R> {
         R apply(T t) throws Exception;
@@ -35,7 +41,7 @@ public abstract class TransactionalService {
     }
 
     private <R> R executeWithReturn(ThrowingFunction<EntityManager, R> action) {
-        try (EntityManager em = JpaUtils.getEm()) {
+        try (EntityManager em = emf.createEntityManager()) {
             EntityTransaction tx = em.getTransaction();
 
             try {
@@ -52,7 +58,7 @@ public abstract class TransactionalService {
     }
 
     private void executeVoid(ThrowingConsumer<EntityManager> action) {
-        try (EntityManager em = JpaUtils.getEm()) {
+        try (EntityManager em = emf.createEntityManager()) {
             EntityTransaction tx = em.getTransaction();
 
             try {

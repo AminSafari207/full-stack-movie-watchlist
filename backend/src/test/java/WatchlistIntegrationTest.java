@@ -1,52 +1,56 @@
 package com.fsmw.test;
 
+import com.fsmw.config.PersistenceUnit;
 import com.fsmw.model.movie.Movie;
 import com.fsmw.model.user.User;
-import com.fsmw.repository.movie.MovieRepositoryImpl;
-import com.fsmw.repository.user.UserRepositoryImpl;
-import com.fsmw.repository.watchlist.WatchlistRepositoryImpl;
+import com.fsmw.service.ServiceProvider;
 import com.fsmw.service.movie.MovieService;
-import com.fsmw.service.movie.MovieServiceImpl;
 import com.fsmw.service.user.UserService;
-import com.fsmw.service.user.UserServiceImpl;
-import com.fsmw.service.watchlist.WatchlistServiceImpl;
+import com.fsmw.service.watchlist.WatchlistService;
+import com.fsmw.config.JpaUtils;
 import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.Persistence;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class WatchlistIntegrationIT {
-
+public class WatchlistIntegrationTest {
     private static EntityManagerFactory emf;
 
     private static UserService userService;
     private static MovieService movieService;
-    private static WatchlistServiceImpl watchlistService;
+    private static WatchlistService watchlistService;
 
     @BeforeAll
     public static void init() {
-        emf = Persistence.createEntityManagerFactory("h2-test");
+        ServiceProvider sp = new ServiceProvider(PersistenceUnit.TEST);
 
-        userService = new UserServiceImpl();
-        movieService = new MovieServiceImpl();
-        watchlistService = new WatchlistServiceImpl();
+        userService = sp.getUserService();
+        movieService = sp.getMovieService();
+        watchlistService = sp.getWatchlistService();
+    }
+
+    @BeforeEach
+    public void resetTables() {
+        var em = JpaUtils.getEm(PersistenceUnit.TEST);
+        em.getTransaction().begin();
+
+        em.createNativeQuery("DELETE FROM watchlists").executeUpdate();
+        em.createNativeQuery("DELETE FROM movies").executeUpdate();
+        em.createNativeQuery("DELETE FROM users").executeUpdate();
+
+        em.getTransaction().commit();
+        em.close();
     }
 
     @AfterAll
     public static void tearDown() {
-        if (emf != null && emf.isOpen()) emf.close();
+        JpaUtils.shutdown();
     }
 
     @Test
