@@ -1,4 +1,4 @@
-package com.fsmw.servlet;
+package com.fsmw.servlet.filter;
 
 import jakarta.servlet.*;
 import jakarta.servlet.annotation.WebFilter;
