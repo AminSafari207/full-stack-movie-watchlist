@@ -2,6 +2,9 @@ package com.fsmw.model.user;
 
 import com.fsmw.model.common.BaseEntity;
 import com.fsmw.model.movie.Movie;
+import com.fsmw.model.user.rnp.PermissionType;
+import com.fsmw.model.user.rnp.Role;
+import com.fsmw.model.user.rnp.RoleType;
 import com.fsmw.model.watchlist.Watchlist;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
@@ -45,6 +48,25 @@ public class User extends BaseEntity {
     )
     @Builder.Default
     private Set<Watchlist> watchlist = new HashSet<>();
+
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "user_roles",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id")
+    )
+    @Builder.Default
+    private Set<Role> roles = new HashSet<>();
+
+    public boolean hasRole(RoleType role) {
+        return roles.stream().anyMatch(r -> r.getName() == role);
+    }
+
+    public boolean hasPermission(PermissionType permission) {
+        return roles.stream()
+                .flatMap(r -> r.getPermissions().stream())
+                .anyMatch(p -> p.getName() == permission);
+    }
 
     public void addToWatchlist(Movie movie, String status) {
         Watchlist w = Watchlist
