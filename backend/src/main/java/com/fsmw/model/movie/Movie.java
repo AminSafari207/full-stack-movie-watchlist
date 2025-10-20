@@ -10,6 +10,7 @@ import jakarta.validation.constraints.Positive;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
+import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -27,6 +28,10 @@ public class Movie extends BaseEntity {
     private String title;
 
     @NotBlank
+    @Column(name = "desc", nullable = false)
+    private String description;
+
+    @NotBlank
     @Column(name = "genre", nullable = false)
     private String genre;
 
@@ -34,6 +39,15 @@ public class Movie extends BaseEntity {
     @Positive
     @Column(name = "duration", nullable = false)
     private Long duration;
+
+    @Column(name = "release_date", nullable = false)
+    private LocalDate releaseDate;
+
+    @Column(name = "rating", nullable = false)
+    private int rating;
+
+    @Column(name = "poster_image_base64")
+    private String posterImageBase64;
 
     @OneToMany(
             mappedBy = "movie",
