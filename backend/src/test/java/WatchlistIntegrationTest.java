@@ -1,9 +1,13 @@
 package com.fsmw.test;
 
 import com.fsmw.config.PersistenceUnit;
+import com.fsmw.model.auth.Role;
+import com.fsmw.model.auth.RoleType;
 import com.fsmw.model.movie.Movie;
 import com.fsmw.model.user.User;
+import com.fsmw.service.RolePermissionSeeder;
 import com.fsmw.service.ServiceProvider;
+import com.fsmw.service.auth.RoleService;
 import com.fsmw.service.movie.MovieService;
 import com.fsmw.service.user.UserService;
 import com.fsmw.service.watchlist.WatchlistService;
@@ -11,10 +15,7 @@ import com.fsmw.config.JpaUtils;
 import jakarta.persistence.EntityManagerFactory;
 import org.junit.jupiter.api.*;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -25,27 +26,32 @@ public class WatchlistIntegrationTest {
     private static UserService userService;
     private static MovieService movieService;
     private static WatchlistService watchlistService;
+    private static RoleService roleService;
 
     @BeforeAll
     public static void init() {
-        ServiceProvider sp = new ServiceProvider(PersistenceUnit.MW);
+        ServiceProvider sp = new ServiceProvider(PersistenceUnit.TEST);
 
         userService = sp.getUserService();
         movieService = sp.getMovieService();
         watchlistService = sp.getWatchlistService();
+        roleService = sp.getRoleService();
     }
 
     @BeforeEach
     public void resetTables() {
         var em = JpaUtils.getEm(PersistenceUnit.TEST);
         em.getTransaction().begin();
-
         em.createNativeQuery("DELETE FROM watchlists").executeUpdate();
         em.createNativeQuery("DELETE FROM movies").executeUpdate();
+        em.createNativeQuery("DELETE FROM user_roles").executeUpdate();
+        em.createNativeQuery("DELETE FROM roles").executeUpdate();
+        em.createNativeQuery("DELETE FROM permissions").executeUpdate();
         em.createNativeQuery("DELETE FROM users").executeUpdate();
-
         em.getTransaction().commit();
         em.close();
+
+        new RolePermissionSeeder(PersistenceUnit.TEST).seed();
     }
 
     @AfterAll
@@ -55,10 +61,12 @@ public class WatchlistIntegrationTest {
 
     @Test
     public void createUser() {
+        Role userRole = roleService.findByName(RoleType.USER).get();
         User u = User.builder()
                 .username("johndoe")
                 .email("johndoe@example.com")
                 .password("password")
+                .roles(Set.of(userRole))
                 .build();
 
         User created = userService.save(u);
@@ -68,6 +76,7 @@ public class WatchlistIntegrationTest {
         assertEquals("johndoe", fetched.getUsername());
         assertEquals("johndoe@example.com", fetched.getEmail());
         assertNotNull(fetched.getPassword(), "password should be present");
+        assertTrue(fetched.hasRole(RoleType.USER), "role type should be USER");
     }
 
     @Test
@@ -89,10 +98,12 @@ public class WatchlistIntegrationTest {
 
     @Test
     public void addMultipleWatchlistWithConcurrency_removeOneAlso() throws InterruptedException, ExecutionException, TimeoutException {
+        Role adminRole = roleService.findByName(RoleType.ADMIN).get();
         User u = User.builder()
                 .username("johndoe")
                 .email("johndoe@example.com")
                 .password("password")
+                .roles(Set.of(adminRole))
                 .build();
 
         Long userId = userService.save(u).getId();
