@@ -8,11 +8,9 @@ import com.fsmw.model.auth.RoleType;
 import com.fsmw.model.dto.ApiResponseDto;
 import com.fsmw.model.dto.UserDto;
 import com.fsmw.model.user.User;
-import com.fsmw.repository.user.UserRepository;
 import com.fsmw.service.ServiceProvider;
 import com.fsmw.service.auth.RoleService;
 import com.fsmw.service.user.UserService;
-import com.fsmw.service.watchlist.WatchlistService;
 import com.fsmw.utils.PasswordUtil;
 import com.fsmw.utils.validators.ServletRequestValidator;
 import jakarta.servlet.annotation.WebServlet;
@@ -24,8 +22,8 @@ import java.io.IOException;
 import java.util.Optional;
 import java.util.Set;
 
-@WebServlet("/register")
-public class RegisterServlet extends HttpServlet {
+@WebServlet("/auth/*")
+public class AuthServlet extends HttpServlet {
     private final ObjectMapper mapper = new ObjectMapper();;
     private UserService userService;
     private RoleService roleService;
@@ -42,7 +40,24 @@ public class RegisterServlet extends HttpServlet {
     }
 
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) {
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        String path = req.getPathInfo();
+
+        if ("/register".equals(path)) {
+            handleRegister(req, resp);
+        } else {
+            resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            mapper.writeValue(
+                    resp.getWriter(),
+                    ApiResponseDto.error(
+                            HttpServletResponse.SC_NOT_FOUND,
+                            "invalid endpoint",
+                            "Invalid request path"
+                    ));
+        }
+    }
+
+    private void handleRegister(HttpServletRequest req, HttpServletResponse resp) {
         resp.setContentType("application/json");
 
         try {
