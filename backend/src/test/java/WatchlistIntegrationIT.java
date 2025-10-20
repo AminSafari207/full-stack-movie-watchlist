@@ -20,7 +20,7 @@ import java.util.concurrent.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class WatchlistIntegrationTest {
+public class WatchlistIntegrationIT {
     private static EntityManagerFactory emf;
 
     private static UserService userService;
