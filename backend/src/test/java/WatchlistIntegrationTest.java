@@ -3,6 +3,8 @@ package com.fsmw.test;
 import com.fsmw.config.PersistenceUnit;
 import com.fsmw.model.movie.Movie;
 import com.fsmw.model.user.User;
+import com.fsmw.model.user.rnp.Role;
+import com.fsmw.model.user.rnp.RoleType;
 import com.fsmw.service.ServiceProvider;
 import com.fsmw.service.movie.MovieService;
 import com.fsmw.service.user.UserService;
@@ -28,7 +30,7 @@ public class WatchlistIntegrationTest {
 
     @BeforeAll
     public static void init() {
-        ServiceProvider sp = new ServiceProvider(PersistenceUnit.TEST);
+        ServiceProvider sp = new ServiceProvider(PersistenceUnit.MW);
 
         userService = sp.getUserService();
         movieService = sp.getMovieService();
