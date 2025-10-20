@@ -1,29 +1,30 @@
 package com.fsmw.service;
 
+import com.fsmw.config.PersistenceUnit;
 import com.fsmw.model.auth.Permission;
 import com.fsmw.model.auth.PermissionType;
 import com.fsmw.model.auth.Role;
 import com.fsmw.model.auth.RoleType;
-import com.fsmw.repository.auth.PermissionRepository;
-import com.fsmw.repository.auth.PermissionRepositoryImpl;
-import com.fsmw.repository.auth.RoleRepository;
-import com.fsmw.repository.auth.RoleRepositoryImpl;
-import jakarta.persistence.EntityManager;
+import com.fsmw.service.auth.PermissionService;
+import com.fsmw.service.auth.RoleService;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class RolePermissionSeeder {
-    private final RoleRepository roleRepository;
-    private final PermissionRepository permissionRepository;
+    private final RoleService roleService;
+    private final PermissionService permissionService;
 
-    public RolePermissionSeeder(EntityManager em) {
-        this.roleRepository = new RoleRepositoryImpl(em);
-        this.permissionRepository = new PermissionRepositoryImpl(em);
+    public RolePermissionSeeder(PersistenceUnit persistenceUnit) {
+        ServiceProvider serviceProvider = new ServiceProvider(persistenceUnit);
+
+        this.roleService = serviceProvider.getRoleService();
+        this.permissionService = serviceProvider.getPermissionService();
     }
 
-    private static final Map<RoleType, Set<PermissionType>> ROLE_PERMISSION_MAP = Map.of(
+    private final Map<RoleType, Set<PermissionType>> ROLE_PERMISSION_MAP = Map.of(
             RoleType.USER, Set.of(
+                    PermissionType.CAN_ADD_MOVIE,
                     PermissionType.CAN_VIEW_WATCHLIST,
                     PermissionType.CAN_EDIT_PROFILE
             ),
@@ -35,27 +36,30 @@ public class RolePermissionSeeder {
 
     public void seed() {
         Arrays.stream(PermissionType.values())
-                .forEach(p -> permissionRepository
+                .forEach(p -> permissionService
                         .findByName(p)
-                        .orElseGet(() -> permissionRepository.save(Permission.builder().name(p).build()))
+                        .orElseGet(() -> permissionService.save(
+                                Permission.builder().name(p).build()
+                        ))
                 );
-
 
         for (var entry : ROLE_PERMISSION_MAP.entrySet()) {
             RoleType roleType = entry.getKey();
             Set<PermissionType> permissionTypes = entry.getValue();
 
-            Role role = roleRepository
+            Role role = roleService
                     .findByName(roleType)
-                    .orElseGet(() -> roleRepository.save(Role.builder().name(roleType).build()));
+                    .orElseGet(() -> roleService.save(
+                            Role.builder().name(roleType).build()
+                    ));
 
-            List<Permission> allPermissions = permissionRepository.findAll();
+            List<Permission> allPermissions = permissionService.findAll();
             Set<Permission> assignedPerms = allPermissions.stream()
                     .filter(p -> permissionTypes.contains(p.getName()))
                     .collect(Collectors.toSet());
 
             role.setPermissions(assignedPerms);
-            roleRepository.save(role);
+            roleService.save(role);
         }
     }
 }
