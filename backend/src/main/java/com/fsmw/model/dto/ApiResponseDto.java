@@ -10,7 +10,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class ApiResponseDto<T> {
-
     private MetaStatus _meta;
     private Record<T> record;
 
