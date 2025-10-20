@@ -1,7 +1,7 @@
 package com.fsmw.repository.auth;
 
-import com.fsmw.model.user.rnp.Permission;
-import com.fsmw.model.user.rnp.PermissionType;
+import com.fsmw.model.auth.Permission;
+import com.fsmw.model.auth.PermissionType;
 import com.fsmw.repository.base.BaseRepository;
 
 import java.util.Optional;

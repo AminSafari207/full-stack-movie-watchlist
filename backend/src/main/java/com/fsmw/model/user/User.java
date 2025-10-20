@@ -2,16 +2,14 @@ package com.fsmw.model.user;
 
 import com.fsmw.model.common.BaseEntity;
 import com.fsmw.model.movie.Movie;
-import com.fsmw.model.user.rnp.PermissionType;
-import com.fsmw.model.user.rnp.Role;
-import com.fsmw.model.user.rnp.RoleType;
+import com.fsmw.model.auth.PermissionType;
+import com.fsmw.model.auth.Role;
+import com.fsmw.model.auth.RoleType;
 import com.fsmw.model.watchlist.Watchlist;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
 
 import java.util.HashSet;
 import java.util.Set;

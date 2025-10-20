@@ -1,4 +1,4 @@
-package com.fsmw.model.user.rnp;
+package com.fsmw.model.auth;
 
 import com.fsmw.model.common.BaseEntity;
 import jakarta.persistence.*;

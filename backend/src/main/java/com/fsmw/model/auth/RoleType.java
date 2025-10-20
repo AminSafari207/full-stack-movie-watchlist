@@ -1,4 +1,4 @@
-package com.fsmw.model.user.rnp;
+package com.fsmw.model.auth;
 
 public enum RoleType {
     USER,
