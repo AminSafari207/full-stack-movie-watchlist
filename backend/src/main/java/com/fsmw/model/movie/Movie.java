@@ -28,14 +28,13 @@ public class Movie extends BaseEntity {
     private String title;
 
     @NotBlank
-    @Column(name = "desc", nullable = false)
+    @Column(name = "description", nullable = false)
     private String description;
 
     @NotBlank
     @Column(name = "genre", nullable = false)
     private String genre;
 
-    @NotNull
     @Positive
     @Column(name = "duration", nullable = false)
     private Long duration;

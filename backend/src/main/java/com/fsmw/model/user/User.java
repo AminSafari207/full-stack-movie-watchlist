@@ -31,7 +31,7 @@ public class User extends BaseEntity {
     private String username;
 
     @NotBlank
-    @Column(name = "email", nullable = false)
+    @Column(name = "email", unique = true, nullable = false)
     private String email;
 
     @NotBlank
@@ -39,7 +39,8 @@ public class User extends BaseEntity {
     private String password;
 
     @Column(name = "profile_image_base64")
-    private String profileImageBase64;
+    @Builder.Default
+    private String profileImageBase64 = "";
 
     @OneToMany(
             mappedBy = "user",
