@@ -1,15 +1,14 @@
-package com.fsmw.utils.validators;
+package com.fsmw.utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fsmw.model.dto.ApiResponseDto;
-import com.fsmw.utils.StringUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 
-public class ServletRequestValidator  {
-    private ServletRequestValidator() {
+public class ServletUtil {
+    private ServletUtil() {
         throw new IllegalStateException("'ServletRequestValidator' cannot be instantiated.");
     }
 
