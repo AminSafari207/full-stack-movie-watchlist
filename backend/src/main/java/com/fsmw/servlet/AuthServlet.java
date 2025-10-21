@@ -128,19 +128,7 @@ public class AuthServlet extends HttpServlet {
             );
         } catch (ServletUtil.ValidationException ignored) {
         } catch (Exception e) {
-            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-
-            try {
-                mapper.writeValue(resp.getWriter(),
-                        ApiResponseDto.error(
-                                HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                                e.getMessage(),
-                                "Something went wrong"
-                        )
-                );
-            } catch (IOException ioException) {
-                throw new RuntimeException(ioException);
-            }
+            ServletUtil.handleCommonInternalException(req, resp, mapper, e);
         }
     }
 
@@ -171,7 +159,7 @@ public class AuthServlet extends HttpServlet {
             User foundUser = userOpt.get();
             String sessionId = SessionManager.createSession(foundUser.getId(), foundUser.getRoles());
 
-            Cookie cookie = new Cookie("CSESSIONID", sessionId);
+            Cookie cookie = new Cookie("JSESSIONID", sessionId);
             cookie.setHttpOnly(true);
             cookie.setSecure(false);
             cookie.setPath("/");
@@ -197,19 +185,7 @@ public class AuthServlet extends HttpServlet {
             );
         } catch (ServletUtil.ValidationException ignored) {
         } catch (Exception e) {
-            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-
-            try {
-                mapper.writeValue(resp.getWriter(),
-                        ApiResponseDto.error(
-                                HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                                e.getMessage(),
-                                "Something went wrong"
-                        )
-                );
-            } catch (IOException ioException) {
-                throw new RuntimeException(ioException);
-            }
+            ServletUtil.handleCommonInternalException(req, resp, mapper, e);
         }
     }
 }

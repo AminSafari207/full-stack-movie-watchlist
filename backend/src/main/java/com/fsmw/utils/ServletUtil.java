@@ -42,4 +42,25 @@ public class ServletUtil {
             super(message);
         }
     }
+
+    public static void handleCommonInternalException(
+            HttpServletRequest req,
+            HttpServletResponse resp,
+            ObjectMapper mapper,
+            Exception e
+    ) {
+        resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+
+        try {
+            mapper.writeValue(resp.getWriter(),
+                    ApiResponseDto.error(
+                            HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+                            e.getMessage(),
+                            "Something went wrong"
+                    )
+            );
+        } catch (IOException ioException) {
+            throw new RuntimeException(ioException);
+        }
+    }
 }
