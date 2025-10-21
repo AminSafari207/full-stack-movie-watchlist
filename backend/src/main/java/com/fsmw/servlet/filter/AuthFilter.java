@@ -1,8 +1,7 @@
 package com.fsmw.servlet.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fsmw.model.dto.ApiResponseDto;
-import com.fsmw.model.user.User;
+import com.fsmw.model.dto.response.common.ApiResponseDto;
 import com.fsmw.session.SessionData;
 import com.fsmw.session.SessionManager;
 import com.fsmw.utils.ObjectMapperProvider;

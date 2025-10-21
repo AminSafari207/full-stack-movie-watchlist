@@ -1,4 +1,4 @@
-package com.fsmw.model.dto;
+package com.fsmw.model.dto.response.common;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

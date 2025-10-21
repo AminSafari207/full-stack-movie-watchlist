@@ -1,12 +1,10 @@
 package com.fsmw.servlet;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fsmw.model.auth.Role;
 import com.fsmw.model.auth.RoleType;
-import com.fsmw.model.dto.ApiResponseDto;
-import com.fsmw.model.dto.UserDto;
+import com.fsmw.model.dto.response.common.ApiResponseDto;
+import com.fsmw.model.dto.response.user.UserSafeResponseDto;
 import com.fsmw.model.user.User;
 import com.fsmw.service.ServiceProvider;
 import com.fsmw.service.auth.RoleService;
@@ -18,11 +16,9 @@ import com.fsmw.utils.PasswordUtil;
 import com.fsmw.utils.ServletUtil;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import java.io.IOException;
 import java.util.Optional;
 import java.util.Set;
 
@@ -95,7 +91,7 @@ public class AuthServlet extends BaseServlet {
                     .build();
 
             User saved = userService.save(user);
-            UserDto userDto = UserDto.from(saved);
+            UserSafeResponseDto userSafeResponseDto = UserSafeResponseDto.from(saved);
 
             resp.setStatus(HttpServletResponse.SC_CREATED);
 
@@ -105,7 +101,7 @@ public class AuthServlet extends BaseServlet {
                             HttpServletResponse.SC_CREATED,
                             "",
                             "User registered successfully",
-                            userDto
+                            userSafeResponseDto
                     )
             );
         } catch (ServletUtil.ValidationException ignored) {
@@ -148,7 +144,7 @@ public class AuthServlet extends BaseServlet {
 
             resp.addCookie(cookie);
 
-            UserDto userDto = UserDto.from(foundUser);
+            UserSafeResponseDto userSafeResponseDto = UserSafeResponseDto.from(foundUser);
 
             resp.setStatus(HttpServletResponse.SC_OK);
 
@@ -158,7 +154,7 @@ public class AuthServlet extends BaseServlet {
                             HttpServletResponse.SC_OK,
                             "",
                             "Login successful",
-                            userDto
+                            userSafeResponseDto
                     )
             );
         } catch (ServletUtil.ValidationException ignored) {

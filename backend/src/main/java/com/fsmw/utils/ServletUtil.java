@@ -1,10 +1,11 @@
 package com.fsmw.utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fsmw.model.dto.ApiResponseDto;
+import com.fsmw.model.dto.response.common.ApiResponseDto;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 
 public class ServletUtil {
@@ -83,4 +84,19 @@ public class ServletUtil {
             throw new RuntimeException(ioException);
         }
     }
+
+    public static String readRequestBody(HttpServletRequest req) throws IOException {
+        StringBuilder sb = new StringBuilder();
+
+        try (BufferedReader reader = req.getReader()) {
+            String line;
+
+            while ((line = reader.readLine()) != null) {
+                sb.append(line);
+            }
+        }
+
+        return sb.toString();
+    }
+
 }
