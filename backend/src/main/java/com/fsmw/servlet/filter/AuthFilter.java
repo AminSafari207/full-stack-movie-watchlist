@@ -2,8 +2,10 @@ package com.fsmw.servlet.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fsmw.model.dto.ApiResponseDto;
+import com.fsmw.model.user.User;
 import com.fsmw.session.SessionData;
 import com.fsmw.session.SessionManager;
+import com.fsmw.utils.ObjectMapperProvider;
 import jakarta.servlet.*;
 import jakarta.servlet.annotation.WebFilter;
 import jakarta.servlet.http.Cookie;
@@ -16,14 +18,14 @@ import java.util.Optional;
 
 @WebFilter("/*")
 public class AuthFilter implements Filter {
-    private final ObjectMapper mapper = new ObjectMapper();
+    private final ObjectMapper mapper = ObjectMapperProvider.get();
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         HttpServletRequest req = (HttpServletRequest) request;
         HttpServletResponse resp = (HttpServletResponse) response;
 
-        String path = req.getRequestURI();
+        String path = req.getRequestURI().substring(req.getContextPath().length());
 
         if (path.startsWith("/auth/")) {
             chain.doFilter(request, response);
