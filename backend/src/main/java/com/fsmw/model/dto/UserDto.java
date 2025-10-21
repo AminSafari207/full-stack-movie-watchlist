@@ -2,8 +2,8 @@ package com.fsmw.model.dto;
 
 import com.fsmw.model.user.User;
 
-public record UserDto(Long id, String username, String email) {
+public record UserDto(String username, String email, String profileImageBase64) {
     public static UserDto from(User user) {
-        return new UserDto(user.getId(), user.getUsername(), user.getEmail());
+        return new UserDto(user.getUsername(), user.getEmail(), user.getProfileImageBase64());
     }
 }
