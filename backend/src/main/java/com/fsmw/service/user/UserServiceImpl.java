@@ -21,4 +21,9 @@ public class UserServiceImpl
     public Optional<User> findByEmail(String email) {
         return executeTransaction(em -> coreRepository(em).findByEmail(email));
     }
+
+    @Override
+    public Optional<User> findByUsername(String username) {
+        return executeTransaction(em -> coreRepository(em).findByUsername(username));
+    }
 }

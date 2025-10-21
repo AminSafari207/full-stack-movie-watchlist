@@ -18,4 +18,12 @@ public class UserRepositoryImpl extends AbstractBaseRepository<User, Long> imple
                 .getResultStream()
                 .findFirst();
     }
+
+    @Override
+    public Optional<User> findByUsername(String username) {
+        return em.createQuery("select e from User e where e.username = :username", entityClassRef)
+                .setParameter("username", username)
+                .getResultStream()
+                .findFirst();
+    }
 }
