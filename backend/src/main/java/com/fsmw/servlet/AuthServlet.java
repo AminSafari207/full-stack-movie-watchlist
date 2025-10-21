@@ -95,7 +95,7 @@ public class AuthServlet extends BaseServlet {
                     .build();
 
             User saved = userService.save(user);
-            UserDto userDto = new UserDto(saved.getId(), saved.getUsername(), saved.getEmail());
+            UserDto userDto = UserDto.from(saved);
 
             resp.setStatus(HttpServletResponse.SC_CREATED);
 
@@ -148,11 +148,7 @@ public class AuthServlet extends BaseServlet {
 
             resp.addCookie(cookie);
 
-            UserDto userDto = new UserDto(
-                    foundUser.getId(),
-                    foundUser.getUsername(),
-                    foundUser.getEmail()
-            );
+            UserDto userDto = UserDto.from(foundUser);
 
             resp.setStatus(HttpServletResponse.SC_OK);
 
