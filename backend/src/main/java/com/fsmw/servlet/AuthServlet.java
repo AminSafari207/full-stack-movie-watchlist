@@ -11,7 +11,9 @@ import com.fsmw.model.user.User;
 import com.fsmw.service.ServiceProvider;
 import com.fsmw.service.auth.RoleService;
 import com.fsmw.service.user.UserService;
+import com.fsmw.servlet.base.BaseServlet;
 import com.fsmw.session.SessionManager;
+import com.fsmw.utils.ObjectMapperProvider;
 import com.fsmw.utils.PasswordUtil;
 import com.fsmw.utils.ServletUtil;
 import jakarta.servlet.annotation.WebServlet;
@@ -25,8 +27,8 @@ import java.util.Optional;
 import java.util.Set;
 
 @WebServlet("/auth/*")
-public class AuthServlet extends HttpServlet {
-    private final ObjectMapper mapper = new ObjectMapper();;
+public class AuthServlet extends BaseServlet {
+    private final ObjectMapper mapper = ObjectMapperProvider.get();;
     private UserService userService;
     private RoleService roleService;
 
@@ -37,28 +39,8 @@ public class AuthServlet extends HttpServlet {
         this.userService = serviceProvider.getUserService();
         this.roleService = serviceProvider.getRoleService();
 
-        mapper.registerModule(new JavaTimeModule());
-        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-    }
-
-    @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        String path = req.getPathInfo();
-
-        if ("/register".equals(path)) {
-            handleRegister(req, resp);
-        } else if ("/login".equals(path)) {
-            handleLogin(req, resp);
-        } else {
-            resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            mapper.writeValue(
-                    resp.getWriter(),
-                    ApiResponseDto.error(
-                            HttpServletResponse.SC_NOT_FOUND,
-                            "invalid endpoint",
-                            "Invalid request path"
-                    ));
-        }
+        registerPost("/register", this::handleRegister);
+        registerPost("/login", this::handleLogin);
     }
 
     private void handleRegister(HttpServletRequest req, HttpServletResponse resp) {
@@ -128,7 +110,7 @@ public class AuthServlet extends HttpServlet {
             );
         } catch (ServletUtil.ValidationException ignored) {
         } catch (Exception e) {
-            ServletUtil.handleCommonInternalException(req, resp, mapper, e);
+            ServletUtil.handleCommonInternalException(resp, mapper, e);
         }
     }
 
@@ -185,7 +167,7 @@ public class AuthServlet extends HttpServlet {
             );
         } catch (ServletUtil.ValidationException ignored) {
         } catch (Exception e) {
-            ServletUtil.handleCommonInternalException(req, resp, mapper, e);
+            ServletUtil.handleCommonInternalException(resp, mapper, e);
         }
     }
 }
