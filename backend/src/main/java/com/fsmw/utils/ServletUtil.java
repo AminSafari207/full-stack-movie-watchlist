@@ -44,7 +44,6 @@ public class ServletUtil {
     }
 
     public static void handleCommonInternalException(
-            HttpServletRequest req,
             HttpServletResponse resp,
             ObjectMapper mapper,
             Exception e
@@ -57,6 +56,27 @@ public class ServletUtil {
                             HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
                             e.getMessage(),
                             "Something went wrong"
+                    )
+            );
+        } catch (IOException ioException) {
+            throw new RuntimeException(ioException);
+        }
+    }
+
+    public static void handleCommonInvalidPath(
+            HttpServletResponse resp,
+            ObjectMapper mapper,
+            String path
+    ) {
+        resp.setStatus(HttpServletResponse.SC_BAD_GATEWAY);
+
+        try {
+            mapper.writeValue(
+                    resp.getWriter(),
+                    ApiResponseDto.error(
+                            HttpServletResponse.SC_BAD_GATEWAY,
+                            "invalid endpoint: " + path,
+                            "Invalid request endpoint"
                     )
             );
         } catch (IOException ioException) {
