@@ -7,6 +7,7 @@ import com.fsmw.model.dto.CreateMovieDto;
 import com.fsmw.model.dto.ErrorDto;
 import com.fsmw.model.dto.MovieDto;
 import com.fsmw.model.dto.request.movie.AddMovieRequestDto;
+import com.fsmw.model.dto.request.movie.EditMovieRequestDto;
 import com.fsmw.model.dto.response.common.ApiResponseDto;
 import com.fsmw.model.dto.response.movie.MovieResponseDto;
 import com.fsmw.model.movie.Movie;
@@ -45,6 +46,7 @@ public class MovieServlet extends BaseServlet {
 
         registerPost("/getmovies", this::handleGetMovies);
         registerPost("/addmovie", this::handleAddMovie);
+        registerPost("/editmovie", this::handleEditMovie);
     }
 
     private void handleGetMovies(HttpServletRequest req, HttpServletResponse resp) {
@@ -142,12 +144,12 @@ public class MovieServlet extends BaseServlet {
                 return;
             }
 
-            if (addDto.rating() == 0) {
+            if (addDto.rating() < 1 || addDto.rating() > 10 ) {
                 ServletResponseUtil.writeError(
                         resp,
                         HttpServletResponse.SC_BAD_REQUEST,
-                        "rating must be higher than 0",
-                        "Rating must be higher than 0"
+                        "rating must be between 1 and 10",
+                        "Rating must be between 1 and 10"
                 );
                 return;
             }
@@ -169,6 +171,59 @@ public class MovieServlet extends BaseServlet {
                     "",
                     "Movie added successfully",
                     mapper.convertValue(savedMovie, MovieResponseDto.class)
+            );
+        } catch (Exception e) {
+            ServletUtil.handleCommonInternalException(resp, mapper, e);
+        }
+    }
+
+    private void handleEditMovie(HttpServletRequest req, HttpServletResponse resp) {
+        resp.setContentType("application/text");
+
+        try {
+            String body = ServletUtil.readRequestBody(req);
+            EditMovieRequestDto editDto = mapper.readValue(body, EditMovieRequestDto.class);
+
+            Optional<Movie> movieOpt = movieService.findById(editDto.movieId());
+
+            if (movieOpt.isEmpty()) {
+                ServletResponseUtil.writeError(
+                        resp,
+                        HttpServletResponse.SC_NOT_FOUND,
+                        "movie with ID '" + editDto.movieId() + "' not found",
+                        "Movie not found"
+                );
+                return;
+            }
+
+            Movie movie = movieOpt.get();
+
+            if (editDto.title() != null) movie.setTitle(editDto.title());
+            if (editDto.description() != null) movie.setDescription(editDto.description());
+            if (editDto.genre() != null) movie.setGenre(editDto.genre());
+            if (editDto.posterImageBase64() != null) movie.setPosterImageBase64(editDto.posterImageBase64());
+            if (editDto.duration() != null) movie.setDuration(editDto.duration());
+            if (editDto.releaseDate() != null) movie.setReleaseDate(editDto.releaseDate());
+            if (editDto.rating() < 1 || editDto.rating() > 10 ) {
+                ServletResponseUtil.writeError(
+                        resp,
+                        HttpServletResponse.SC_BAD_REQUEST,
+                        "rating must be between 1 and 10",
+                        "Rating must be between 1 and 10"
+                );
+                return;
+            } else {
+                movie.setRating(editDto.rating());
+            }
+
+            Movie updatedMovie = movieService.save(movie);
+
+            ServletResponseUtil.writeSuccess(
+                    resp,
+                    HttpServletResponse.SC_OK,
+                    "",
+                    "Movie added successfully",
+                    mapper.convertValue(updatedMovie, MovieResponseDto.class)
             );
         } catch (Exception e) {
             ServletUtil.handleCommonInternalException(resp, mapper, e);
