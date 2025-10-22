@@ -6,7 +6,6 @@ import com.fsmw.model.movie.Movie;
 import java.time.LocalDate;
 
 public record AddMovieRequestDto(
-        Long movieId,
         String title,
         String description,
         String genre,

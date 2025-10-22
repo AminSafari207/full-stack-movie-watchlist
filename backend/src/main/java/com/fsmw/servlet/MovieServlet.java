@@ -14,6 +14,7 @@ import com.fsmw.service.ServiceProvider;
 import com.fsmw.service.movie.MovieService;
 import com.fsmw.servlet.base.BaseServlet;
 import com.fsmw.utils.ObjectMapperProvider;
+import com.fsmw.utils.ServletResponseUtil;
 import com.fsmw.utils.ServletUtil;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -27,6 +28,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -90,56 +92,83 @@ public class MovieServlet extends BaseServlet {
             String body = ServletUtil.readRequestBody(req);
             AddMovieRequestDto addDto = mapper.readValue(body, AddMovieRequestDto.class);
 
-            Optional<Movie> movieOpt = movieService.findById(addDto.movieId());
-
-            if (movieOpt.isEmpty()) {
-                resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
-                mapper.writeValue(
-                        resp.getWriter(),
-                        ApiResponseDto.error(
-                                HttpServletResponse.SC_NOT_FOUND,
-                                "movie with id '" + addDto.movieId() + "' not found",
-                                "Movie not found"
-                        )
+            if (addDto.title() == null) {
+                ServletResponseUtil.writeError(
+                        resp,
+                        HttpServletResponse.SC_BAD_REQUEST,
+                        "title must be provided",
+                        "Title must be provided"
                 );
                 return;
             }
 
-            Movie movie = movieOpt.get();
-
-            if (addDto.title() != null) movie.setTitle(addDto.title());
-            if (addDto.description() != null) movie.setDescription(addDto.description());
-            if (addDto.genre() != null) movie.setGenre(addDto.genre());
-            if (addDto.duration() != null) movie.setDuration(addDto.duration());
-            if (addDto.releaseDate() != null) movie.setReleaseDate(addDto.releaseDate());
-            if (addDto.posterImageBase64() != null) movie.setPosterImageBase64(addDto.posterImageBase64());
-
-            if (addDto.rating() > 0) {
-                movie.setRating(addDto.rating());
-            } else {
-                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                mapper.writeValue(
-                        resp.getWriter(),
-                        ApiResponseDto.error(
-                                HttpServletResponse.SC_BAD_REQUEST,
-                                "movie rating must be higher than 0",
-                                "Movie rating must be higher than 0"
-                        )
+            if (addDto.description() == null) {
+                ServletResponseUtil.writeError(
+                        resp,
+                        HttpServletResponse.SC_BAD_REQUEST,
+                        "description must be provided",
+                        "Description must be provided"
                 );
                 return;
             }
 
-            Movie savedMovie = movieService.save(movie);
+            if (addDto.genre() == null) {
+                ServletResponseUtil.writeError(
+                        resp,
+                        HttpServletResponse.SC_BAD_REQUEST,
+                        "genre must be provided",
+                        "Genre must be provided"
+                );
+                return;
+            }
 
-            resp.setStatus(HttpServletResponse.SC_OK);
-            mapper.writeValue(
-                    resp.getWriter(),
-                    ApiResponseDto.success(
-                            HttpServletResponse.SC_OK,
-                            "",
-                            "Movie added successfully",
-                            mapper.convertValue(savedMovie, MovieResponseDto.class)
-                    )
+            if (addDto.duration() == null) {
+                ServletResponseUtil.writeError(
+                        resp,
+                        HttpServletResponse.SC_BAD_REQUEST,
+                        "duration must be provided",
+                        "Duration must be provided"
+                );
+                return;
+            }
+
+            if (addDto.releaseDate() == null) {
+                ServletResponseUtil.writeError(
+                        resp,
+                        HttpServletResponse.SC_BAD_REQUEST,
+                        "release date must be provided",
+                        "Release dat must be provided"
+                );
+                return;
+            }
+
+            if (addDto.rating() == 0) {
+                ServletResponseUtil.writeError(
+                        resp,
+                        HttpServletResponse.SC_BAD_REQUEST,
+                        "rating must be higher than 0",
+                        "Rating must be higher than 0"
+                );
+                return;
+            }
+
+            Movie newMovie = Movie.builder()
+                    .title(addDto.title())
+                    .description(addDto.description())
+                    .genre(addDto.genre())
+                    .posterImageBase64(Objects.requireNonNullElse(addDto.posterImageBase64(), ""))
+                    .duration(addDto.duration())
+                    .releaseDate(addDto.releaseDate())
+                    .rating(addDto.rating())
+                    .build();
+            Movie savedMovie = movieService.save(newMovie);
+
+            ServletResponseUtil.writeSuccess(
+                    resp,
+                    HttpServletResponse.SC_OK,
+                    "",
+                    "Movie added successfully",
+                    mapper.convertValue(savedMovie, MovieResponseDto.class)
             );
         } catch (Exception e) {
             ServletUtil.handleCommonInternalException(resp, mapper, e);
