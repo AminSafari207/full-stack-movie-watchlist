@@ -6,6 +6,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fsmw.model.dto.CreateMovieDto;
 import com.fsmw.model.dto.ErrorDto;
 import com.fsmw.model.dto.MovieDto;
+import com.fsmw.model.dto.request.movie.AddMovieRequestDto;
 import com.fsmw.model.dto.response.common.ApiResponseDto;
 import com.fsmw.model.dto.response.movie.MovieResponseDto;
 import com.fsmw.model.movie.Movie;
@@ -41,9 +42,10 @@ public class MovieServlet extends BaseServlet {
         this.movieService = serviceProvider.getMovieService();
 
         registerPost("/getmovies", this::handleGetMovies);
+        registerPost("/addmovie", this::handleAddMovie);
     }
 
-    public void handleGetMovies(HttpServletRequest req, HttpServletResponse resp) {
+    private void handleGetMovies(HttpServletRequest req, HttpServletResponse resp) {
         resp.setContentType("application/text");
 
         try {
@@ -74,6 +76,69 @@ public class MovieServlet extends BaseServlet {
                             "",
                             "Movies found successfully",
                             movieDtos
+                    )
+            );
+        } catch (Exception e) {
+            ServletUtil.handleCommonInternalException(resp, mapper, e);
+        }
+    }
+
+    private void handleAddMovie(HttpServletRequest req, HttpServletResponse resp) {
+        resp.setContentType("application/text");
+
+        try {
+            String body = ServletUtil.readRequestBody(req);
+            AddMovieRequestDto addDto = mapper.readValue(body, AddMovieRequestDto.class);
+
+            Optional<Movie> movieOpt = movieService.findById(addDto.movieId());
+
+            if (movieOpt.isEmpty()) {
+                resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                mapper.writeValue(
+                        resp.getWriter(),
+                        ApiResponseDto.error(
+                                HttpServletResponse.SC_NOT_FOUND,
+                                "movie with id '" + addDto.movieId() + "' not found",
+                                "Movie not found"
+                        )
+                );
+                return;
+            }
+
+            Movie movie = movieOpt.get();
+
+            if (addDto.title() != null) movie.setTitle(addDto.title());
+            if (addDto.description() != null) movie.setDescription(addDto.description());
+            if (addDto.genre() != null) movie.setGenre(addDto.genre());
+            if (addDto.duration() != null) movie.setDuration(addDto.duration());
+            if (addDto.releaseDate() != null) movie.setReleaseDate(addDto.releaseDate());
+            if (addDto.posterImageBase64() != null) movie.setPosterImageBase64(addDto.posterImageBase64());
+
+            if (addDto.rating() > 0) {
+                movie.setRating(addDto.rating());
+            } else {
+                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                mapper.writeValue(
+                        resp.getWriter(),
+                        ApiResponseDto.error(
+                                HttpServletResponse.SC_BAD_REQUEST,
+                                "movie rating must be higher than 0",
+                                "Movie rating must be higher than 0"
+                        )
+                );
+                return;
+            }
+
+            Movie savedMovie = movieService.save(movie);
+
+            resp.setStatus(HttpServletResponse.SC_OK);
+            mapper.writeValue(
+                    resp.getWriter(),
+                    ApiResponseDto.success(
+                            HttpServletResponse.SC_OK,
+                            "",
+                            "Movie added successfully",
+                            mapper.convertValue(savedMovie, MovieResponseDto.class)
                     )
             );
         } catch (Exception e) {

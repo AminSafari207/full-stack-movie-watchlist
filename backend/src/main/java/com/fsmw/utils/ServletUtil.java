@@ -1,6 +1,7 @@
 package com.fsmw.utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fsmw.model.dto.request.user.EditUserRequestDto;
 import com.fsmw.model.dto.response.common.ApiResponseDto;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -98,5 +99,4 @@ public class ServletUtil {
 
         return sb.toString();
     }
-
 }
