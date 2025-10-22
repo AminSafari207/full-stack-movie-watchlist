@@ -15,12 +15,15 @@ import com.fsmw.config.JpaUtils;
 import jakarta.persistence.EntityManagerFactory;
 import org.junit.jupiter.api.*;
 
+import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class WatchlistIntegrationIT {
+    private static final PersistenceUnit PERSISTENCE_UNIT = PersistenceUnit.MW;
+
     private static EntityManagerFactory emf;
 
     private static UserService userService;
@@ -30,7 +33,7 @@ public class WatchlistIntegrationIT {
 
     @BeforeAll
     public static void init() {
-        ServiceProvider sp = new ServiceProvider(PersistenceUnit.TEST);
+        ServiceProvider sp = new ServiceProvider(PERSISTENCE_UNIT);
 
         userService = sp.getUserService();
         movieService = sp.getMovieService();
@@ -38,15 +41,16 @@ public class WatchlistIntegrationIT {
         roleService = sp.getRoleService();
     }
 
-    @BeforeEach
+//    @BeforeEach
     public void resetTables() {
-        var em = JpaUtils.getEm(PersistenceUnit.TEST);
+        var em = JpaUtils.getEm(PERSISTENCE_UNIT);
         em.getTransaction().begin();
         em.createNativeQuery("DELETE FROM watchlists").executeUpdate();
         em.createNativeQuery("DELETE FROM movies").executeUpdate();
         em.createNativeQuery("DELETE FROM user_roles").executeUpdate();
-        em.createNativeQuery("DELETE FROM roles").executeUpdate();
+        em.createNativeQuery("DELETE FROM role_permissions").executeUpdate();
         em.createNativeQuery("DELETE FROM permissions").executeUpdate();
+        em.createNativeQuery("DELETE FROM roles").executeUpdate();
         em.createNativeQuery("DELETE FROM users").executeUpdate();
         em.getTransaction().commit();
         em.close();
@@ -83,8 +87,12 @@ public class WatchlistIntegrationIT {
     public void createMovie() {
         Movie m = Movie.builder()
                 .title("The Matrix")
+                .description("Test Description")
                 .genre("Sci-Fi")
+                .rating(8)
                 .duration(8160L)
+                .releaseDate(LocalDate.now())
+                .posterImageBase64("")
                 .build();
 
         Movie created = movieService.save(m);
@@ -111,9 +119,13 @@ public class WatchlistIntegrationIT {
 
         for (int i = 1; i <= 5; i++) {
             Movie m = Movie.builder()
-                    .title("Movie " + i)
-                    .genre("Genre" + i)
+                    .title("Movie-" + i)
+                    .genre("Genre-" + i)
                     .duration(5000L + i * 60L)
+                    .description("Desc-" + i)
+                    .rating(i)
+                    .releaseDate(LocalDate.now())
+                    .posterImageBase64("")
                     .build();
 
             movieIds.add(movieService.save(m).getId());

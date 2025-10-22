@@ -1,5 +1,6 @@
 package com.fsmw.model.movie;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fsmw.model.common.BaseEntity;
 import com.fsmw.model.user.User;
 import com.fsmw.model.watchlist.Watchlist;
@@ -52,8 +53,9 @@ public class Movie extends BaseEntity {
             mappedBy = "movie",
             cascade = CascadeType.ALL,
             orphanRemoval = true,
-            fetch = FetchType.EAGER
+            fetch = FetchType.LAZY
     )
+    @JsonIgnore
     @Builder.Default
     private Set<Watchlist> watchlist = new HashSet<>();
 }

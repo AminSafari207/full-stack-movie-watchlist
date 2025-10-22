@@ -1,4 +1,4 @@
-package com.fsmw.model.dto.response.user;
+package com.fsmw.model.dto.request.user;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fsmw.utils.ObjectMapperProvider;

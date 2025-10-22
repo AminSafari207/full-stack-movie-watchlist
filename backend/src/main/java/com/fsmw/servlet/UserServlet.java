@@ -3,7 +3,7 @@ package com.fsmw.servlet;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fsmw.exceptions.UserNotFoundException;
 import com.fsmw.model.dto.response.common.ApiResponseDto;
-import com.fsmw.model.dto.response.user.EditUserRequestDto;
+import com.fsmw.model.dto.request.user.EditUserRequestDto;
 import com.fsmw.model.dto.response.user.UserSafeResponseDto;
 import com.fsmw.model.user.User;
 import com.fsmw.service.ServiceProvider;
