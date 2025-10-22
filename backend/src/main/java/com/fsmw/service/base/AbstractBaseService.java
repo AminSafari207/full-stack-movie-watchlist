@@ -51,4 +51,9 @@ public class AbstractBaseService<
     public boolean deleteById(ID id) {
         return executeTransaction(em -> coreRepository(em).deleteById(id));
     }
+
+    @Override
+    public boolean existsById(ID id) {
+        return executeTransaction(em -> coreRepository(em).exists(id));
+    }
 }
