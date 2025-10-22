@@ -1,6 +1,7 @@
 package com.fsmw.servlet;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fsmw.exceptions.UserNotFoundException;
 import com.fsmw.model.dto.response.common.ApiResponseDto;
 import com.fsmw.model.dto.response.user.EditUserRequestDto;
 import com.fsmw.model.dto.response.user.UserSafeResponseDto;
@@ -79,23 +80,8 @@ public class UserServlet extends BaseServlet {
             EditUserRequestDto eurDto = EditUserRequestDto.fromJson(body);
 
             Long userId = (Long) req.getAttribute("userId");
-            Optional<User> userOpt = userService.findById(userId);
-
-            if (userOpt.isEmpty()) {
-                resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
-                mapper.writeValue(
-                        resp.getWriter(),
-                        ApiResponseDto.error(
-                                404,
-                                "user not found",
-                                "User not found"
-                        )
-                );
-
-                return;
-            }
-
-            User user = userOpt.get();
+            User user = userService.findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
+            // TODO: how to prevent duplicate not found user handler?
 
             if (eurDto.username() != null) {
                 if (!eurDto.username().equals(user.getUsername())) {
@@ -187,89 +173,4 @@ public class UserServlet extends BaseServlet {
             ServletUtil.handleCommonInternalException(resp, mapper, e);
         }
     }
-
-//    @Override
-//    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-//        resp.setContentType("application/json");
-//
-//        try {
-//            String idParam = req.getParameter("id");
-//
-//            if (idParam != null) {
-//                Long id = Long.valueOf(idParam);
-//                Optional<User> userOpt = userService.findById(id);
-//
-//                if (userOpt.isPresent()) {
-//                    writeJson(resp, UserDto.from(userOpt.get()));
-//                } else {
-//                    resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
-//                }
-//            } else {
-//                List<User> users = userService.findAll();
-//                List<UserDto> dtos = users.stream()
-//                        .map(UserDto::from)
-//                        .collect(Collectors.toList());
-//
-//                writeJson(resp, dtos);
-//            }
-//        } catch (Exception e) {
-//            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-//            writeJson(resp, new ErrorDto("Server error", e.getMessage()));
-//        }
-//    }
-//
-//    @Override
-//    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-//        resp.setContentType("application/json");
-//
-//        try {
-//            CreateUserDto dto = mapper.readValue(req.getInputStream(), CreateUserDto.class);
-//
-//            User user = User.builder()
-//                    .username(dto.username())
-//                    .email(dto.email())
-//                    .password(dto.password())
-//                    .build();
-//
-//            User saved = userService.save(user);
-//
-//            resp.setStatus(HttpServletResponse.SC_CREATED);
-//            writeJson(resp, UserDto.from(saved));
-//        } catch (Exception e) {
-//            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-//            writeJson(resp, new ErrorDto("Invalid request", e.getMessage()));
-//        }
-//    }
-//
-//    @Override
-//    protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-//        resp.setContentType("application/json");
-//
-//        String idParam = req.getParameter("id");
-//
-//        if (idParam == null) {
-//            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-//            writeJson(resp, new ErrorDto("Missing parameter", "id is required"));
-//            return;
-//        }
-//
-//        try {
-//            Long id = Long.valueOf(idParam);
-//            boolean deleted = userService.deleteById(id);
-//
-//            if (deleted) {
-//                resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
-//            } else {
-//                resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
-//                writeJson(resp, new ErrorDto("Not found", "User with id " + id + " not found"));
-//            }
-//        } catch (NumberFormatException e) {
-//            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-//            writeJson(resp, new ErrorDto("Invalid id", "id must be a number"));
-//        }
-//    }
-//
-//    private void writeJson(HttpServletResponse resp, Object data) throws IOException {
-//        mapper.writeValue(resp.getOutputStream(), data);
-//    }
 }

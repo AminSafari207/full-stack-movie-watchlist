@@ -1,7 +1,10 @@
 package com.fsmw.servlet.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fsmw.config.PersistenceUnit;
 import com.fsmw.model.dto.response.common.ApiResponseDto;
+import com.fsmw.service.ServiceProvider;
+import com.fsmw.service.user.UserService;
 import com.fsmw.session.SessionData;
 import com.fsmw.session.SessionManager;
 import com.fsmw.utils.ObjectMapperProvider;
@@ -18,6 +21,14 @@ import java.util.Optional;
 @WebFilter("/*")
 public class AuthFilter implements Filter {
     private final ObjectMapper mapper = ObjectMapperProvider.get();
+    private UserService userService;
+
+    @Override
+    public void init(FilterConfig filterConfig) {
+        ServiceProvider sp = new ServiceProvider(PersistenceUnit.MW);
+
+        this.userService = sp.getUserService();
+    }
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
@@ -66,6 +77,19 @@ public class AuthFilter implements Filter {
                     )
             );
 
+            return;
+        }
+
+        if (!userService.existsById(session.get().userId())) {
+            resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            mapper.writeValue(
+                    resp.getWriter(),
+                    ApiResponseDto.error(
+                            HttpServletResponse.SC_UNAUTHORIZED,
+                            "user not found",
+                            "User not found"
+                    )
+            );
             return;
         }
 
