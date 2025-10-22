@@ -39,6 +39,37 @@ public class ServletUtil {
         return value;
     }
 
+    public static Long getRequiredLongParam(
+            HttpServletRequest req,
+            HttpServletResponse resp,
+            String paramName
+    ) throws IOException {
+        String raw = req.getParameter(paramName);
+
+        if (raw == null || raw.isBlank()) {
+            ServletResponseUtil.writeError(
+                    resp,
+                    HttpServletResponse.SC_BAD_REQUEST,
+                    "missing required parameter: " + paramName,
+                    "Parameter '" + paramName + "' is required"
+            );
+            return null;
+        }
+
+        try {
+            return Long.parseLong(raw);
+        } catch (NumberFormatException e) {
+            ServletResponseUtil.writeError(
+                    resp,
+                    HttpServletResponse.SC_BAD_REQUEST,
+                    "invalid number format for parameter: " + paramName,
+                    "Parameter '" + paramName + "' must be a valid number"
+            );
+            return null;
+        }
+    }
+
+
     public static class ValidationException extends RuntimeException {
         public ValidationException(String message) {
             super(message);

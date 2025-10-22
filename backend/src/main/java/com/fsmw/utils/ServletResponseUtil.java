@@ -32,5 +32,9 @@ public class ServletResponseUtil {
     public static <T> void writeSuccess(HttpServletResponse resp, T data) {
         writeSuccess(resp, HttpServletResponse.SC_OK, "", "", data);
     }
+
+    public static void writeSuccess(HttpServletResponse resp) {
+        writeSuccess(resp, new Object());
+    }
 }
 

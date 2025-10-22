@@ -47,6 +47,7 @@ public class MovieServlet extends BaseServlet {
         registerPost("/getmovies", this::handleGetMovies);
         registerPost("/addmovie", this::handleAddMovie);
         registerPost("/editmovie", this::handleEditMovie);
+        registerPost("/removemovie", this::handleRemoveMovie);
     }
 
     private void handleGetMovies(HttpServletRequest req, HttpServletResponse resp) {
@@ -144,7 +145,7 @@ public class MovieServlet extends BaseServlet {
                 return;
             }
 
-            if (addDto.rating() < 1 || addDto.rating() > 10 ) {
+            if (addDto.rating() < 1 || addDto.rating() > 10) {
                 ServletResponseUtil.writeError(
                         resp,
                         HttpServletResponse.SC_BAD_REQUEST,
@@ -204,7 +205,7 @@ public class MovieServlet extends BaseServlet {
             if (editDto.posterImageBase64() != null) movie.setPosterImageBase64(editDto.posterImageBase64());
             if (editDto.duration() != null) movie.setDuration(editDto.duration());
             if (editDto.releaseDate() != null) movie.setReleaseDate(editDto.releaseDate());
-            if (editDto.rating() < 1 || editDto.rating() > 10 ) {
+            if (editDto.rating() < 1 || editDto.rating() > 10) {
                 ServletResponseUtil.writeError(
                         resp,
                         HttpServletResponse.SC_BAD_REQUEST,
@@ -222,7 +223,7 @@ public class MovieServlet extends BaseServlet {
                     resp,
                     HttpServletResponse.SC_OK,
                     "",
-                    "Movie added successfully",
+                    "Movie edited successfully",
                     mapper.convertValue(updatedMovie, MovieResponseDto.class)
             );
         } catch (Exception e) {
@@ -230,88 +231,32 @@ public class MovieServlet extends BaseServlet {
         }
     }
 
-//    @Override
-//    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-//        resp.setContentType("application/json");
-//
-//        try {
-//            String idParam = req.getParameter("id");
-//
-//            if (idParam != null) {
-//                Long id = Long.valueOf(idParam);
-//                Optional<Movie> movieOpt = movieService.findById(id);
-//
-//                if (movieOpt.isPresent()) {
-//                    writeJson(resp, MovieDto.from(movieOpt.get()));
-//                } else {
-//                    resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
-//                }
-//            } else {
-//                List<Movie> movies = movieService.findAll();
-//                List<MovieDto> dtos = movies.stream()
-//                        .map(MovieDto::from)
-//                        .collect(Collectors.toList());
-//
-//                writeJson(resp, dtos);
-//            }
-//        } catch (Exception e) {
-//            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-//            writeJson(resp, new ErrorDto("Server error", e.getMessage()));
-//        }
-//    }
-//
-//    @Override
-//    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-//        resp.setContentType("application/json");
-//
-//        try {
-//            CreateMovieDto dto = mapper.readValue(req.getInputStream(), CreateMovieDto.class);
-//
-//            Movie movie = Movie.builder()
-//                    .title(dto.title())
-//                    .genre(dto.genre())
-//                    .duration(dto.duration())
-//                    .build();
-//
-//            Movie saved = movieService.save(movie);
-//
-//            resp.setStatus(HttpServletResponse.SC_CREATED);
-//            writeJson(resp, MovieDto.from(saved));
-//        } catch (Exception e) {
-//            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-//            writeJson(resp, new ErrorDto("Invalid request", e.getMessage()));
-//        }
-//    }
-//
-//    @Override
-//    protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-//        resp.setContentType("application/json");
-//
-//        String idParam = req.getParameter("id");
-//
-//        if (idParam == null) {
-//            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-//            writeJson(resp, new ErrorDto("Missing parameter", "id is required"));
-//            return;
-//        }
-//
-//        try {
-//            Long id = Long.valueOf(idParam);
-//            boolean deleted = movieService.deleteById(id);
-//
-//            if (deleted) {
-//                resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
-//            } else {
-//                resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
-//                writeJson(resp, new ErrorDto("Not found", "Movie with id " + id + " not found"));
-//            }
-//        } catch (NumberFormatException e) {
-//            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-//            writeJson(resp, new ErrorDto("Invalid id", "id must be a number"));
-//        }
-//    }
-//
-//    private void writeJson(HttpServletResponse resp, Object data) throws IOException {
-//        mapper.writeValue(resp.getOutputStream(), data);
-//    }
+    private void handleRemoveMovie(HttpServletRequest req, HttpServletResponse resp) {
+        resp.setContentType("application/text");
+
+        try {
+            Long movieId = ServletUtil.getRequiredLongParam(req, resp, "movieId");
+
+            if (movieId == null) return;
+
+            if (movieService.deleteById(movieId)) {
+                ServletResponseUtil.writeSuccess(
+                        resp,
+                        HttpServletResponse.SC_OK,
+                        "",
+                        "Movie removed successfully",
+                        new Object()
+                );
+            } else {
+                ServletResponseUtil.writeError(
+                        resp,
+                        HttpServletResponse.SC_NOT_FOUND,
+                        "movie with ID '" + movieId + "' not found",
+                        "Movie not found"
+                );
+            }
+        } catch (Exception e) {
+            ServletUtil.handleCommonInternalException(resp, mapper, e);
+        }
+    }
 }
