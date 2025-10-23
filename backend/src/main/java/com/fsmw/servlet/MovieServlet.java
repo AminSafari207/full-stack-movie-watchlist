@@ -51,7 +51,7 @@ public class MovieServlet extends BaseServlet {
         registerPost("/getmovies", this::handleGetMovies);
         registerPost("/addmovie", this::handleAddMovie);
         registerPost("/editmovie", this::handleEditMovie);
-        registerPost("/removemovie", this::handleRemoveMovie);
+        registerPost("/deletemovie", this::handleDeleteMovie);
     }
 
     private void handleGetMovies(HttpServletRequest req, HttpServletResponse resp) {
@@ -188,6 +188,8 @@ public class MovieServlet extends BaseServlet {
         resp.setContentType("application/text");
 
         try {
+            if (!authorizationService.hasPermission(req, PermissionType.CAN_EDIT_MOVIE)) return;
+
             String body = ServletUtil.readRequestBody(req);
             EditMovieRequestDto editDto = mapper.readValue(body, EditMovieRequestDto.class);
 
@@ -237,10 +239,12 @@ public class MovieServlet extends BaseServlet {
         }
     }
 
-    private void handleRemoveMovie(HttpServletRequest req, HttpServletResponse resp) {
+    private void handleDeleteMovie(HttpServletRequest req, HttpServletResponse resp) {
         resp.setContentType("application/text");
 
         try {
+            if (!authorizationService.hasPermission(req, PermissionType.CAN_DELETE_MOVIE)) return;
+
             Long movieId = ServletUtil.getRequiredLongParam(req, resp, "movieId");
 
             if (movieId == null) return;
