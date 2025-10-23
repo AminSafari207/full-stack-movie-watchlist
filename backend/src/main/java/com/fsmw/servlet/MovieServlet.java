@@ -1,12 +1,7 @@
 package com.fsmw.servlet;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fsmw.model.auth.PermissionType;
-import com.fsmw.model.dto.CreateMovieDto;
-import com.fsmw.model.dto.ErrorDto;
-import com.fsmw.model.dto.MovieDto;
 import com.fsmw.model.dto.request.movie.AddMovieRequestDto;
 import com.fsmw.model.dto.request.movie.EditMovieRequestDto;
 import com.fsmw.model.dto.response.common.ApiResponseDto;
@@ -20,7 +15,6 @@ import com.fsmw.utils.ObjectMapperProvider;
 import com.fsmw.utils.ServletResponseUtil;
 import com.fsmw.utils.ServletUtil;
 import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 //import javax.servlet.ServletException;
@@ -29,11 +23,9 @@ import jakarta.servlet.http.HttpServletResponse;
 //import javax.servlet.http.HttpServletRequest;
 //import javax.servlet.http.HttpServletResponse;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @WebServlet("/movie/*")
 public class MovieServlet extends BaseServlet {
@@ -151,14 +143,24 @@ public class MovieServlet extends BaseServlet {
                 return;
             }
 
-            if (addDto.rating() < 1 || addDto.rating() > 10) {
+            if (addDto.rating() == null) {
                 ServletResponseUtil.writeError(
                         resp,
                         HttpServletResponse.SC_BAD_REQUEST,
-                        "rating must be between 1 and 10",
-                        "Rating must be between 1 and 10"
+                        "rating must be provided",
+                        "rating must be provided"
                 );
                 return;
+            } else {
+                if (addDto.rating() < 1 || addDto.rating() > 10) {
+                    ServletResponseUtil.writeError(
+                            resp,
+                            HttpServletResponse.SC_BAD_REQUEST,
+                            "rating must be between 1 and 10",
+                            "Rating must be between 1 and 10"
+                    );
+                    return;
+                }
             }
 
             Movie newMovie = Movie.builder()
@@ -213,15 +215,17 @@ public class MovieServlet extends BaseServlet {
             if (editDto.posterImageBase64() != null) movie.setPosterImageBase64(editDto.posterImageBase64());
             if (editDto.duration() != null) movie.setDuration(editDto.duration());
             if (editDto.releaseDate() != null) movie.setReleaseDate(editDto.releaseDate());
-            if (editDto.rating() < 1 || editDto.rating() > 10) {
-                ServletResponseUtil.writeError(
-                        resp,
-                        HttpServletResponse.SC_BAD_REQUEST,
-                        "rating must be between 1 and 10",
-                        "Rating must be between 1 and 10"
-                );
-                return;
-            } else {
+            if (editDto.rating() != null) {
+                if (editDto.rating() < 1 || editDto.rating() > 10) {
+                    ServletResponseUtil.writeError(
+                            resp,
+                            HttpServletResponse.SC_BAD_REQUEST,
+                            "rating must be between 1 and 10",
+                            "Rating must be between 1 and 10"
+                    );
+                    return;
+                }
+
                 movie.setRating(editDto.rating());
             }
 
