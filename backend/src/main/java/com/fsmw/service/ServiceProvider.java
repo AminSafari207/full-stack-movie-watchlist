@@ -1,10 +1,7 @@
 package com.fsmw.service;
 
 import com.fsmw.config.PersistenceUnit;
-import com.fsmw.service.auth.PermissionService;
-import com.fsmw.service.auth.PermissionServiceImpl;
-import com.fsmw.service.auth.RoleService;
-import com.fsmw.service.auth.RoleServiceImpl;
+import com.fsmw.service.auth.*;
 import com.fsmw.service.movie.MovieService;
 import com.fsmw.service.movie.MovieServiceImpl;
 import com.fsmw.service.user.UserService;
@@ -43,5 +40,9 @@ public final class ServiceProvider {
 
     public PermissionService getPermissionService() {
         return new PermissionServiceImpl(emf);
+    }
+
+    public AuthorizationService getAuthorizationService() {
+        return new AuthorizationServiceImpl();
     }
 }

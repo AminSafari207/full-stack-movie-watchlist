@@ -38,7 +38,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     }
 
     @Override
-    public boolean requireRole(HttpServletRequest req, HttpServletResponse resp, RoleType role, ObjectMapper mapper) throws IOException {
+    public boolean requireRole(HttpServletRequest req, HttpServletResponse resp, ObjectMapper mapper, RoleType role) throws IOException {
         if (!hasRole(req, role)) {
             resp.setContentType("application/text");
             resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
@@ -56,7 +56,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     }
 
     @Override
-    public boolean requirePermission(HttpServletRequest req, HttpServletResponse resp, PermissionType permission, ObjectMapper mapper) throws IOException {
+    public boolean requirePermission(HttpServletRequest req, HttpServletResponse resp, ObjectMapper mapper, PermissionType permission) throws IOException {
         if (!hasPermission(req, permission)) {
             resp.setContentType("application/text");
             resp.setStatus(HttpServletResponse.SC_FORBIDDEN);

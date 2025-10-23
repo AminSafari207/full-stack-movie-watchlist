@@ -12,6 +12,6 @@ public interface AuthorizationService {
     boolean hasRole(HttpServletRequest req, RoleType role);
     boolean hasPermission(HttpServletRequest req, PermissionType permission);
 
-    boolean requireRole(HttpServletRequest req, HttpServletResponse resp, RoleType role, ObjectMapper mapper) throws IOException;
-    boolean requirePermission(HttpServletRequest req, HttpServletResponse resp, PermissionType permission, ObjectMapper mapper) throws IOException;
+    boolean requireRole(HttpServletRequest req, HttpServletResponse resp, ObjectMapper mapper, RoleType role) throws IOException;
+    boolean requirePermission(HttpServletRequest req, HttpServletResponse resp, ObjectMapper mapper, PermissionType permission) throws IOException;
 }
