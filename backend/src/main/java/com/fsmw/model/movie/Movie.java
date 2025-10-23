@@ -44,7 +44,7 @@ public class Movie extends BaseEntity {
     private LocalDate releaseDate;
 
     @Column(name = "rating", nullable = false)
-    private int rating;
+    private Integer rating;
 
     @Column(name = "poster_image_base64")
     private String posterImageBase64;

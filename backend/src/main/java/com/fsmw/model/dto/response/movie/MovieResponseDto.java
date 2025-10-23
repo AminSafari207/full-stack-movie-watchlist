@@ -16,6 +16,6 @@ public record MovieResponseDto(
         @JsonProperty("posterImage") String posterImageBase64,
         Long duration,
         LocalDate releaseDate,
-        int rating
+        Integer rating
 ) {
 }

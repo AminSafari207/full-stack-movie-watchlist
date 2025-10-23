@@ -11,7 +11,7 @@ public record EditMovieRequestDto(
         String genre,
         @JsonProperty("posterImage") String posterImageBase64,
         Long duration,
-        int rating,
+        Integer rating,
         LocalDate releaseDate
 ) {
 }
