@@ -3,6 +3,7 @@ package com.fsmw.servlet;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.fsmw.model.auth.PermissionType;
 import com.fsmw.model.dto.CreateMovieDto;
 import com.fsmw.model.dto.ErrorDto;
 import com.fsmw.model.dto.MovieDto;
@@ -12,6 +13,7 @@ import com.fsmw.model.dto.response.common.ApiResponseDto;
 import com.fsmw.model.dto.response.movie.MovieResponseDto;
 import com.fsmw.model.movie.Movie;
 import com.fsmw.service.ServiceProvider;
+import com.fsmw.service.auth.AuthorizationService;
 import com.fsmw.service.movie.MovieService;
 import com.fsmw.servlet.base.BaseServlet;
 import com.fsmw.utils.ObjectMapperProvider;
@@ -37,12 +39,14 @@ import java.util.stream.Collectors;
 public class MovieServlet extends BaseServlet {
     private final ObjectMapper mapper = ObjectMapperProvider.get();
     private MovieService movieService;
+    private AuthorizationService authorizationService;
 
     @Override
     public void init() {
-        ServiceProvider serviceProvider = new ServiceProvider();
+        ServiceProvider sp = new ServiceProvider();
 
-        this.movieService = serviceProvider.getMovieService();
+        this.movieService = sp.getMovieService();
+        this.authorizationService = sp.getAuthorizationService();
 
         registerPost("/getmovies", this::handleGetMovies);
         registerPost("/addmovie", this::handleAddMovie);
@@ -92,6 +96,8 @@ public class MovieServlet extends BaseServlet {
         resp.setContentType("application/text");
 
         try {
+            if (!authorizationService.requirePermission(req, resp, mapper, PermissionType.CAN_ADD_MOVIE)) return;
+
             String body = ServletUtil.readRequestBody(req);
             AddMovieRequestDto addDto = mapper.readValue(body, AddMovieRequestDto.class);
 
