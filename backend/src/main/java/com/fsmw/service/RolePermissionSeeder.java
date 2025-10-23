@@ -24,9 +24,10 @@ public class RolePermissionSeeder {
 
     private final Map<RoleType, Set<PermissionType>> ROLE_PERMISSION_MAP = Map.of(
             RoleType.USER, Set.of(
-                    PermissionType.CAN_ADD_MOVIE,
-                    PermissionType.CAN_VIEW_WATCHLIST,
-                    PermissionType.CAN_EDIT_PROFILE
+                    PermissionType.CAN_VIEW_PROFILE,
+                    PermissionType.CAN_EDIT_PROFILE,
+                    PermissionType.CAN_VIEW_MOVIE,
+                    PermissionType.CAN_VIEW_WATCHLIST
             ),
 
             RoleType.ADMIN, Set.of(
