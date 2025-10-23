@@ -1,113 +1,85 @@
 package com.fsmw.servlet;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.fsmw.model.dto.CreateWatchlistDto;
-import com.fsmw.model.dto.ErrorDto;
-import com.fsmw.model.dto.MovieDto;
-import com.fsmw.model.dto.WatchlistDto;
-import com.fsmw.model.movie.Movie;
-import com.fsmw.model.watchlist.Watchlist;
+import com.fsmw.config.PersistenceUnit;
+import com.fsmw.model.auth.PermissionType;
+import com.fsmw.model.dto.response.watchlist.WatchlistResponseDto;
+import com.fsmw.model.user.User;
 import com.fsmw.service.ServiceProvider;
+import com.fsmw.service.auth.AuthorizationService;
+import com.fsmw.service.user.UserService;
 import com.fsmw.service.watchlist.WatchlistService;
-import com.fsmw.service.watchlist.WatchlistServiceImpl;
-import jakarta.servlet.ServletException;
+import com.fsmw.servlet.base.BaseServlet;
+import com.fsmw.utils.ObjectMapperProvider;
+import com.fsmw.utils.ServletResponseUtil;
+import com.fsmw.utils.ServletUtil;
 import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import java.io.IOException;
-import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
-@WebServlet("/watchlist")
-public class WatchlistServlet extends HttpServlet {
-    private final ObjectMapper mapper = new ObjectMapper();;
+@WebServlet("/watchlist/*")
+public class WatchlistServlet extends BaseServlet {
+    private final ObjectMapper mapper = ObjectMapperProvider.get();
+    private UserService userService;
     private WatchlistService watchlistService;
+    private AuthorizationService authorizationService;
 
     @Override
     public void init() {
-        ServiceProvider serviceProvider = new ServiceProvider();
+        ServiceProvider sp = new ServiceProvider(PersistenceUnit.MW);
 
-        this.watchlistService = serviceProvider.getWatchlistService();
+        this.userService = sp.getUserService();
+        this.watchlistService = sp.getWatchlistService();
+        this.authorizationService = sp.getAuthorizationService();
 
-        mapper.registerModule(new JavaTimeModule());
-        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        registerPost("/getwatchlist", this::handleGetWatchlist);
     }
 
-    @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        resp.setContentType("application/json");
+    private void handleGetWatchlist(HttpServletRequest req, HttpServletResponse resp) {
+        resp.setContentType("application/text");
 
         try {
+            if (!authorizationService.requirePermission(req, resp, mapper, PermissionType.CAN_VIEW_WATCHLIST)) return;
 
-            String userIdParam = req.getParameter("userId");
+            Long userId = (Long) req.getAttribute("userId");
+            Optional<User> userOpt = userService.findById(userId);
 
-            if (userIdParam == null) {
-                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                writeJson(resp, new ErrorDto("Missing parameter", "userId is required"));
+            if (userOpt.isEmpty()) {
+                ServletResponseUtil.writeError(
+                        resp,
+                        HttpServletResponse.SC_NOT_FOUND,
+                        "user with ID '" + userId +"' not found",
+                        "User not found"
+                );
                 return;
             }
 
-            Long userId = Long.valueOf(userIdParam);
+            User foundUser = userOpt.get();
 
-            List<Movie> entries = watchlistService.getMoviesByUserId(userId);
-            List<MovieDto> movies = entries.stream()
-                    .map(MovieDto::from)
-                    .toList();
+            if (foundUser.getWatchlist().isEmpty()) {
+                ServletResponseUtil.writeError(
+                        resp,
+                        HttpServletResponse.SC_NOT_FOUND,
+                        "watchlist for user with ID '" + userId + "' is empty",
+                        "Watchlist is empty"
+                );
+                return;
+            }
 
-            writeJson(resp, movies);
+            WatchlistResponseDto watchlist = WatchlistResponseDto.fromUser(foundUser, mapper);
+
+            ServletResponseUtil.writeSuccess(
+                    resp,
+                    HttpServletResponse.SC_OK,
+                    "",
+                    "",
+                    watchlist
+            );
         } catch (Exception e) {
-            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            writeJson(resp, new ErrorDto("Server error", e.getMessage()));
+            ServletUtil.handleCommonInternalException(resp, mapper, e);
         }
-    }
-
-
-    @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        resp.setContentType("application/json");
-
-        try {
-            CreateWatchlistDto dto = mapper.readValue(req.getInputStream(), CreateWatchlistDto.class);
-            Watchlist saved = watchlistService.addToWatchlist(dto.userId(), dto.movieId());
-
-            resp.setStatus(HttpServletResponse.SC_CREATED);
-            writeJson(resp, WatchlistDto.from(saved));
-        } catch (Exception e) {
-            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            writeJson(resp, new ErrorDto("Invalid request", e.getMessage()));
-        }
-    }
-
-    @Override
-    protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        resp.setContentType("application/json");
-
-        String userIdParam = req.getParameter("userId");
-        String movieIdParam = req.getParameter("movieId");
-
-        if (userIdParam == null || movieIdParam == null) {
-            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            writeJson(resp, new ErrorDto("Missing parameter", "userId and movieId are required"));
-            return;
-        }
-
-        Long userId = Long.valueOf(userIdParam);
-        Long movieId = Long.valueOf(movieIdParam);
-
-        boolean removed = watchlistService.removeFromWatchlist(userId, movieId);
-
-        if (removed) {
-            resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
-        } else {
-            resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            writeJson(resp, new ErrorDto("Not found", "No watchlist entry for user " + userId + " and movie " + movieId));
-        }
-    }
-
-    private void writeJson(HttpServletResponse resp, Object data) throws IOException {
-        mapper.writeValue(resp.getOutputStream(), data);
     }
 }
