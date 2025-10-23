@@ -188,7 +188,7 @@ public class MovieServlet extends BaseServlet {
         resp.setContentType("application/text");
 
         try {
-            if (!authorizationService.hasPermission(req, PermissionType.CAN_EDIT_MOVIE)) return;
+            if (!authorizationService.requirePermission(req, resp, mapper, PermissionType.CAN_EDIT_MOVIE)) return;
 
             String body = ServletUtil.readRequestBody(req);
             EditMovieRequestDto editDto = mapper.readValue(body, EditMovieRequestDto.class);
@@ -243,7 +243,7 @@ public class MovieServlet extends BaseServlet {
         resp.setContentType("application/text");
 
         try {
-            if (!authorizationService.hasPermission(req, PermissionType.CAN_DELETE_MOVIE)) return;
+            if (!authorizationService.requirePermission(req, resp, mapper, PermissionType.CAN_DELETE_MOVIE)) return;
 
             Long movieId = ServletUtil.getRequiredLongParam(req, resp, "movieId");
 

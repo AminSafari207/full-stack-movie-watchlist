@@ -27,7 +27,9 @@ public class RolePermissionSeeder {
                     PermissionType.CAN_VIEW_PROFILE,
                     PermissionType.CAN_EDIT_PROFILE,
                     PermissionType.CAN_VIEW_MOVIE,
-                    PermissionType.CAN_VIEW_WATCHLIST
+                    PermissionType.CAN_VIEW_WATCHLIST,
+                    PermissionType.CAN_ADD_WATCHLIST,
+                    PermissionType.CAN_DELETE_WATCHLIST
             ),
 
             RoleType.ADMIN, Set.of(
