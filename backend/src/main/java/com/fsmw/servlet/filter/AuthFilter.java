@@ -8,6 +8,7 @@ import com.fsmw.service.user.UserService;
 import com.fsmw.session.SessionData;
 import com.fsmw.session.SessionManager;
 import com.fsmw.utils.ObjectMapperProvider;
+import com.fsmw.utils.ServletResponseUtil;
 import jakarta.servlet.*;
 import jakarta.servlet.annotation.WebFilter;
 import jakarta.servlet.http.Cookie;
@@ -49,46 +50,33 @@ public class AuthFilter implements Filter {
                 .orElse(null);
 
         if (sessionId == null) {
-            resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-
-            mapper.writeValue(
-                    resp.getWriter(),
-                    ApiResponseDto.error(
-                            HttpServletResponse.SC_UNAUTHORIZED,
-                            "session not found in cookie",
-                            "Your session is timed out"
-                    )
+            ServletResponseUtil.writeError(
+                    resp,
+                    HttpServletResponse.SC_UNAUTHORIZED,
+                    "session not found in cookie",
+                    "Your session is timed out"
             );
-
             return;
         }
 
         Optional<SessionData> session = SessionManager.getSession(sessionId);
 
         if (session.isEmpty()) {
-            resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-
-            mapper.writeValue(
-                    resp.getWriter(),
-                    ApiResponseDto.error(
-                            HttpServletResponse.SC_UNAUTHORIZED,
-                            "session not found in session manager",
-                            "Your session is timed out"
-                    )
+            ServletResponseUtil.writeError(
+                    resp,
+                    HttpServletResponse.SC_UNAUTHORIZED,
+                    "session not found in session manager",
+                    "Your session is timed out"
             );
-
             return;
         }
 
         if (!userService.existsById(session.get().userId())) {
-            resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            mapper.writeValue(
-                    resp.getWriter(),
-                    ApiResponseDto.error(
-                            HttpServletResponse.SC_UNAUTHORIZED,
-                            "user not found",
-                            "User not found"
-                    )
+            ServletResponseUtil.writeError(
+                    resp,
+                    HttpServletResponse.SC_UNAUTHORIZED,
+                    "user not found",
+                    "User not found"
             );
             return;
         }
