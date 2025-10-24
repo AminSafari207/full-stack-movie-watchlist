@@ -53,31 +53,25 @@ public class MovieServlet extends BaseServlet {
             List<Movie> movies = movieService.findAll();
 
             if (movies.isEmpty()) {
-                resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
-                mapper.writeValue(
-                        resp.getWriter(),
-                        ApiResponseDto.error(
-                                HttpServletResponse.SC_NOT_FOUND,
-                                "there is no movie here",
-                                "No movies found"
-                        )
+                ServletResponseUtil.writeError(
+                        resp,
+                        HttpServletResponse.SC_NOT_FOUND,
+                        "there is no movie here",
+                        "No movies found"
                 );
                 return;
             }
 
-            List<MovieResponseDto> movieDtos = movies.stream()
+            List<MovieResponseDto> moviesDto = movies.stream()
                     .map(movie -> mapper.convertValue(movie, MovieResponseDto.class))
                     .toList();
 
-            resp.setStatus(HttpServletResponse.SC_OK);
-            mapper.writeValue(
-                    resp.getWriter(),
-                    ApiResponseDto.success(
-                            HttpServletResponse.SC_OK,
-                            "",
-                            "Movies found successfully",
-                            movieDtos
-                    )
+            ServletResponseUtil.writeSuccess(
+                    resp,
+                    HttpServletResponse.SC_OK,
+                    "",
+                    "Movies found successfully",
+                    moviesDto
             );
         } catch (Exception e) {
             ServletUtil.handleCommonInternalException(resp, mapper, e);
