@@ -5,6 +5,7 @@ import com.fsmw.model.dto.response.common.ApiResponseDto;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
+import java.util.Collections;
 
 public class ServletResponseUtil {
     private static final ObjectMapper mapper = ObjectMapperProvider.get();
@@ -33,7 +34,7 @@ public class ServletResponseUtil {
         try {
             resp.setContentType("application/json");
             resp.setStatus(status);
-            mapper.writeValue(resp.getWriter(), ApiResponseDto.success(status, devMessage, userMessage, new Object()));
+            mapper.writeValue(resp.getWriter(), ApiResponseDto.success(status, devMessage, userMessage, Collections.emptyMap()));
         } catch (IOException e) {
             throw new RuntimeException("Failed to write success response", e);
         }

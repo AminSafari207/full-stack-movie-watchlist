@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Collections;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -44,7 +46,7 @@ public class ApiResponseDto<T> {
     public static ApiResponseDto<Object> error(int code, String devMessage, String userMessage) {
         return new ApiResponseDto<>(
                 MetaStatus.ERROR,
-                new Record<>(code, devMessage, userMessage, new Object())
+                new Record<>(code, devMessage, userMessage, Collections.emptyMap())
         );
     }
 
