@@ -36,6 +36,7 @@ public class WatchlistServlet extends BaseServlet {
         this.authorizationService = sp.getAuthorizationService();
 
         registerPost("/getwatchlist", this::handleGetWatchlist);
+        registerPost("/addwatchlist", this::handleAddWatchlist);
     }
 
     private void handleGetWatchlist(HttpServletRequest req, HttpServletResponse resp) {
@@ -76,6 +77,47 @@ public class WatchlistServlet extends BaseServlet {
                     HttpServletResponse.SC_OK,
                     "",
                     "",
+                    watchlist
+            );
+        } catch (Exception e) {
+            ServletUtil.handleCommonInternalException(resp, mapper, e);
+        }
+    }
+
+    private void handleAddWatchlist(HttpServletRequest req, HttpServletResponse resp) {
+        resp.setContentType("application/type");
+
+
+        try {
+            if (!authorizationService.requirePermission(req, resp, mapper, PermissionType.CAN_ADD_WATCHLIST)) return;
+
+            Long userId = (Long) req.getAttribute("userId");
+            Long movieId = ServletUtil.getRequiredLongParam(req, resp, "movieId");
+
+            if (movieId == null) return;
+
+            watchlistService.addToWatchlist(userId, movieId);
+
+            Optional<User> userOpt = userService.findById(userId);
+
+            if (userOpt.isEmpty()) {
+                ServletResponseUtil.writeError(
+                        resp,
+                        HttpServletResponse.SC_NOT_FOUND,
+                        "user with ID '" + userId +"' not found",
+                        "User not found"
+                );
+                return;
+            }
+
+            User foundUser = userOpt.get();
+            WatchlistResponseDto watchlist = WatchlistResponseDto.fromUser(foundUser, mapper);
+
+            ServletResponseUtil.writeSuccess(
+                    resp,
+                    HttpServletResponse.SC_OK,
+                    "",
+                    "Watchlist added successfully",
                     watchlist
             );
         } catch (Exception e) {
