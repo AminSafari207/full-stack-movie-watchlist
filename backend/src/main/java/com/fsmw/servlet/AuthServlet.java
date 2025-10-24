@@ -13,6 +13,7 @@ import com.fsmw.servlet.base.BaseServlet;
 import com.fsmw.session.SessionManager;
 import com.fsmw.utils.ObjectMapperProvider;
 import com.fsmw.utils.PasswordUtil;
+import com.fsmw.utils.ServletResponseUtil;
 import com.fsmw.utils.ServletUtil;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.Cookie;
@@ -30,10 +31,10 @@ public class AuthServlet extends BaseServlet {
 
     @Override
     public void init() {
-        ServiceProvider serviceProvider = new ServiceProvider();
+        ServiceProvider sp = new ServiceProvider();
 
-        this.userService = serviceProvider.getUserService();
-        this.roleService = serviceProvider.getRoleService();
+        this.userService = sp.getUserService();
+        this.roleService = sp.getRoleService();
 
         registerPost("/register", this::handleRegister);
         registerPost("/login", this::handleLogin);
@@ -43,50 +44,44 @@ public class AuthServlet extends BaseServlet {
         resp.setContentType("application/json");
 
         try {
-            String username = ServletUtil.validateBlanksOrNullString(req, resp, mapper, "username");
-            String email    = ServletUtil.validateBlanksOrNullString(req, resp, mapper, "email");
-            String password = ServletUtil.validateBlanksOrNullString(req, resp, mapper, "password");
+            Optional<String> username = ServletUtil.requireBlanksOrNullString(req, resp, "username");
+            if (username.isEmpty()) return;
 
-            password = PasswordUtil.encode(password);
+            Optional<String> email    = ServletUtil.requireBlanksOrNullString(req, resp, "email");
+            if (email.isEmpty()) return;
 
+            Optional<String> password = ServletUtil.requireBlanksOrNullString(req, resp, "password");
+            if (password.isEmpty()) return;
+
+            String encodedPassword = PasswordUtil.encode(password.get());
             Optional<Role> userRole = roleService.findByName(RoleType.USER);
 
             if (userRole.isEmpty()) {
-                resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-
-                mapper.writeValue(
-                        resp.getWriter(),
-                        ApiResponseDto.error(
-                                HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                                "USER role not found",
-                                "Registration is temporarily unavailable"
-                        )
+                ServletResponseUtil.writeError(
+                        resp,
+                        HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+                        "USER role not found",
+                        "Registration is temporarily unavailable"
                 );
-
                 return;
             }
 
-            Optional<User> foundUserOpt = userService.findByEmail(email);
+            Optional<User> foundUserOpt = userService.findByEmail(email.get());
 
             if (foundUserOpt.isPresent()) {
-                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-
-                mapper.writeValue(
-                        resp.getWriter(),
-                        ApiResponseDto.error(
-                                HttpServletResponse.SC_BAD_REQUEST,
-                                "user is already registered",
-                                "Email is already in use"
-                        )
+                ServletResponseUtil.writeError(
+                        resp,
+                        HttpServletResponse.SC_BAD_REQUEST,
+                        "user is already registered",
+                        "Email is already in use"
                 );
-
                 return;
             }
 
             User user = User.builder()
-                    .username(username)
-                    .email(email)
-                    .password(password)
+                    .username(username.get())
+                    .email(email.get())
+                    .password(encodedPassword)
                     .roles(Set.of(userRole.get()))
                     .build();
 
@@ -95,16 +90,13 @@ public class AuthServlet extends BaseServlet {
 
             resp.setStatus(HttpServletResponse.SC_CREATED);
 
-            mapper.writeValue(
-                    resp.getWriter(),
-                    ApiResponseDto.success(
-                            HttpServletResponse.SC_CREATED,
-                            "",
-                            "User registered successfully",
-                            userSafeResponseDto
-                    )
+            ServletResponseUtil.writeSuccess(
+                    resp,
+                    HttpServletResponse.SC_CREATED,
+                    "",
+                    "User registered successfully",
+                    userSafeResponseDto
             );
-        } catch (ServletUtil.ValidationException ignored) {
         } catch (Exception e) {
             ServletUtil.handleCommonInternalException(resp, mapper, e);
         }
@@ -114,23 +106,21 @@ public class AuthServlet extends BaseServlet {
         resp.setContentType("application/json");
 
         try {
-            String username = ServletUtil.validateBlanksOrNullString(req, resp, mapper, "username");
-            String password = ServletUtil.validateBlanksOrNullString(req, resp, mapper, "password");
+            Optional<String> username = ServletUtil.requireBlanksOrNullString(req, resp, "username");
+            if (username.isEmpty()) return;
 
-            Optional<User> userOpt = userService.findByUsername(username);
+            Optional<String> password = ServletUtil.requireBlanksOrNullString(req, resp, "password");
+            if (password.isEmpty()) return;
 
-            if (userOpt.isEmpty() || !PasswordUtil.validate(password, userOpt.get().getPassword())) {
-                resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            Optional<User> userOpt = userService.findByUsername(username.get());
 
-                mapper.writeValue(
-                        resp.getWriter(),
-                        ApiResponseDto.error(
-                                HttpServletResponse.SC_UNAUTHORIZED,
-                                "username or password not found",
-                                "Username or password is not incorrect"
-                        )
+            if (userOpt.isEmpty() || !PasswordUtil.validate(password.get(), userOpt.get().getPassword())) {
+                ServletResponseUtil.writeError(
+                        resp,
+                        HttpServletResponse.SC_UNAUTHORIZED,
+                        "username or password not found",
+                        "Username or password is not incorrect"
                 );
-
                 return;
             }
 
@@ -146,18 +136,13 @@ public class AuthServlet extends BaseServlet {
 
             UserSafeResponseDto userSafeResponseDto = UserSafeResponseDto.from(foundUser);
 
-            resp.setStatus(HttpServletResponse.SC_OK);
-
-            mapper.writeValue(
-                    resp.getWriter(),
-                    ApiResponseDto.success(
-                            HttpServletResponse.SC_OK,
-                            "",
-                            "Login successful",
-                            userSafeResponseDto
-                    )
+            ServletResponseUtil.writeSuccess(
+                    resp,
+                    HttpServletResponse.SC_OK,
+                    "",
+                    "Login successful",
+                    userSafeResponseDto
             );
-        } catch (ServletUtil.ValidationException ignored) {
         } catch (Exception e) {
             ServletUtil.handleCommonInternalException(resp, mapper, e);
         }
