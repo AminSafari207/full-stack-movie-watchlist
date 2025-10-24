@@ -1,42 +1,38 @@
 package com.fsmw.utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fsmw.model.dto.request.user.EditUserRequestDto;
 import com.fsmw.model.dto.response.common.ApiResponseDto;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.util.Optional;
 
 public class ServletUtil {
     private ServletUtil() {
         throw new IllegalStateException("'ServletRequestValidator' cannot be instantiated.");
     }
 
-    public static String validateBlanksOrNullString(
+    public static Optional<String> requireBlanksOrNullString(
             HttpServletRequest req,
             HttpServletResponse resp,
-            ObjectMapper mapper,
             String paramName
-    ) throws IOException {
+    ) {
         String value = req.getParameter(paramName);
 
         if (value == null || value.isBlank()) {
-            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-
-            ApiResponseDto<Object> error = ApiResponseDto.error(
+            ServletResponseUtil.writeError(
+                    resp,
                     HttpServletResponse.SC_BAD_REQUEST,
                     paramName + " is null or blank",
                     StringUtil.capitalize(paramName) + " is required"
             );
 
-            mapper.writeValue(resp.getWriter(), error);
-
-            throw new ValidationException(paramName + " is invalid");
+            return Optional.empty();
         }
 
-        return value;
+        return Optional.of(value);
     }
 
     public static Long getRequiredLongParam(
