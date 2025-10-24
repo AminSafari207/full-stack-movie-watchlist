@@ -25,7 +25,7 @@ public class ServletUtil {
         if (value == null || value.isBlank()) {
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
 
-            ApiResponseDto<Void> error = ApiResponseDto.error(
+            ApiResponseDto<Object> error = ApiResponseDto.error(
                     HttpServletResponse.SC_BAD_REQUEST,
                     paramName + " is null or blank",
                     StringUtil.capitalize(paramName) + " is required"

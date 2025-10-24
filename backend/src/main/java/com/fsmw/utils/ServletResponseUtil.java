@@ -29,6 +29,16 @@ public class ServletResponseUtil {
         }
     }
 
+    public static <T> void writeSuccess(HttpServletResponse resp, int status, String devMessage, String userMessage) {
+        try {
+            resp.setContentType("application/json");
+            resp.setStatus(status);
+            mapper.writeValue(resp.getWriter(), ApiResponseDto.success(status, devMessage, userMessage, new Object()));
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to write success response", e);
+        }
+    }
+
     public static <T> void writeSuccess(HttpServletResponse resp, T data) {
         writeSuccess(resp, HttpServletResponse.SC_OK, "", "", data);
     }

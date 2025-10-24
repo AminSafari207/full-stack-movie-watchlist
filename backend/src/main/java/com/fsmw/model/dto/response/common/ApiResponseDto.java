@@ -41,10 +41,17 @@ public class ApiResponseDto<T> {
         );
     }
 
-    public static <T> ApiResponseDto<T> error(int code, String devMessage, String userMessage) {
+    public static ApiResponseDto<Object> error(int code, String devMessage, String userMessage) {
         return new ApiResponseDto<>(
                 MetaStatus.ERROR,
-                new Record<>(code, devMessage, userMessage, null)
+                new Record<>(code, devMessage, userMessage, new Object())
+        );
+    }
+
+    public static <T> ApiResponseDto<T> error(int code, String devMessage, String userMessage, T data) {
+        return new ApiResponseDto<>(
+                MetaStatus.ERROR,
+                new Record<>(code, devMessage, userMessage, data)
         );
     }
 }
